@@ -1,30 +1,34 @@
-import React, { useRef, useLayoutEffect, useMemo, useState } from "react";
-import { mazeConfig } from "./store";
+import React, { useRef, useLayoutEffect, useMemo, useState, useEffect } from "react";
+import useStore, { mazeConfig } from "./store";
 import * as THREE from "three";
-import { Center } from "@react-three/drei";
-
+import Cell from "./Cell";
+import randomDirection from "./utilities/randomDirection";
 const tempObject = new THREE.Object3D();
+
+/**
+ *
+ * Maze Displayer
+ *
+ */
+
 export default function Maze() {
   // related to maze dimensions
-  const { grid } = useGenerateMazeCoords();
-  const { maze_col, maze_row, cube_size } = mazeConfig;
   const group = useRef();
+  const ref = useRef();
+  useGenerateMazeCoords(ref);
+  const { maze_col, maze_row, cube_size } = mazeConfig;
 
   useLayoutEffect(() => {
-    grid.forEach((cell, i) => {
-      tempObject.position.set(cell.x, cell.y, cell.z);
-      tempObject.updateMatrix();
-      ref.current.setMatrixAt(i, tempObject.matrix);
-    });
-    ref.current.instanceMatrix.needsUpdate = true;
+    // unvisited.forEach((cell, i) => {
+    //   tempObject.position.set(cell.x, cell.y, cell.z);
+    //   tempObject.updateMatrix();
+    //   ref.current.setMatrixAt(i, tempObject.matrix);
+    // });
+    // ref.current.instanceMatrix.needsUpdate = true;
 
     // center the group
-    const box3D = new THREE.Box3().setFromObject(group.current);
-    console.log(Math.floor(maze_col / 2));
-
     group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
   }, [cube_size]);
-  const ref = useRef();
 
   const totalSize = maze_col * maze_row;
   return (
@@ -37,55 +41,43 @@ export default function Maze() {
   );
 }
 
-function randomDirection() {
-  const all_directions = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-  ];
+/**
+ *
+ * Maze Generator
+ *
+ */
 
-  for (let i = all_directions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [all_directions[i], all_directions[j]] = [all_directions[j], all_directions[i]];
-  }
-  return all_directions;
-}
-
-function useVisited() {
-  const [visited, setVisited] = useState([]);
-  console.log("RUn");
-  return { visited, setVisited };
-}
 function useGenerateMazeCoords() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
+  // const { visited, setVisited, unvisited, setUnvisited } = useVisit();
   const all_direction = randomDirection();
-  const { visited, setVisited } = useVisited();
-
-  const grid = useMemo(() => []);
 
   useLayoutEffect(() => {
+    const visited = [];
+    const unvisited = [];
+    const grid = [];
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
-        grid.push(new Cell(x * cube_size, 0, z * cube_size));
+        unvisited.push(new Cell(x * cube_size, 0, z * cube_size));
       }
     }
   }, []);
 
-  return { grid };
+  // return { unvisited };
 }
-class Cell {
-  constructor(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
 
-    this.visited = false;
-  }
+/**
+ *
+ * visit hook that keeps track of nodes visited and unvisited.
+ *
+ */
 
-  show() {
-    const x = this.x * mazeConfig.cube_size;
-    const z = this.z * mazeConfig.cube_size;
-  }
+function useVisit() {
+  const [visited, setVisited] = useState([]);
+  const [unvisited, setUnvisited] = useState([]);
+
+  // useEffect(() => {
+  //   console.log(unvisited);
+  // }, [unvisited]);
+  return { visited, setVisited, unvisited, setUnvisited };
 }
-function MazeBlock() {}
