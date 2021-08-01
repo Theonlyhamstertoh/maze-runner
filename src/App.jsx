@@ -2,13 +2,18 @@ import React, { useState, useEffect, useMemo, useLayoutEffect, useRef } from "re
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Stats, Center } from "@react-three/drei";
 import * as THREE from "three";
+import Maze from "./components/Maze";
+
 function App() {
   return (
     <Canvas
-      orthographic
-      camera={{ position: [0, 100, 0], zoom: 60 }}
+      camera={{ position: [0, 25, 0] }}
       onCreated={({ camera }) => (camera.rotation.z = Math.PI)}>
-      <gridHelper />
+      {/* <gridHelper args={[25, 25]} /> */}
+      <ambientLight />
+      <Stats />
+      <axesHelper args={[10]} />
+      <Maze />
       <OrbitControls />
     </Canvas>
   );
