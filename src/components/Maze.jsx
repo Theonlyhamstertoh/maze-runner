@@ -55,8 +55,9 @@ function useGenerateMazeCoords() {
     const visited = [];
     const grid = [];
     for (let x = 0; x < maze_col; x++) {
+      grid[x] = [];
       for (let z = 0; z < maze_row; z++) {
-        grid.push(new Cell(x * cube_size, 0, z * cube_size));
+        grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false };
       }
     }
     carve_passage_from(0, 0, grid);
@@ -65,12 +66,27 @@ function useGenerateMazeCoords() {
   // return { unvisited };
 }
 
-const toDirectionValue = { E: 1, W: -1, N: 1, S: -1 };
+const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
+const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
 function carve_passage_from(x, z, grid) {
   const cardinalDirections = randomDirection();
 
   cardinalDirections.forEach((cardinal) => {
-    console.log(toDirectionValue[cardinal]);
+    const newXPoint = x + convertToXDirection[cardinal];
+    const newZPoint = z + convertToZDirection[cardinal];
+    // first check if x is
+    if (
+      grid.length - 1 >= newXPoint &&
+      0 <= newXPoint &&
+      -grid.length <= newZPoint &&
+      0 >= newZPoint
+    ) {
+      // because z goes south, points are negative.
+      if (-grid.length <= newZPoint && 0 >= newZPoint) {
+        // problem is that there is no -1 or -100 index in a array. So we wrap it in a absolute to make it positive.
+        console.log(grid[newXPoint][Math.abs(newZPoint)]);
+      }
+    }
   });
 }
 
