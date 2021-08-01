@@ -50,20 +50,28 @@ export default function Maze() {
 function useGenerateMazeCoords() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
   // const { visited, setVisited, unvisited, setUnvisited } = useVisit();
-  const all_direction = randomDirection();
 
   useLayoutEffect(() => {
     const visited = [];
-    const unvisited = [];
     const grid = [];
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
-        unvisited.push(new Cell(x * cube_size, 0, z * cube_size));
+        grid.push(new Cell(x * cube_size, 0, z * cube_size));
       }
     }
+    carve_passage_from(0, 0, grid);
   }, []);
 
   // return { unvisited };
+}
+
+const toDirectionValue = { E: 1, W: -1, N: 1, S: -1 };
+function carve_passage_from(x, z, grid) {
+  const cardinalDirections = randomDirection();
+
+  cardinalDirections.forEach((cardinal) => {
+    console.log(toDirectionValue[cardinal]);
+  });
 }
 
 /**
