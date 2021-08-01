@@ -12,7 +12,7 @@ function App() {
       {/* <gridHelper args={[25, 25]} /> */}
       <ambientLight />
       <Stats />
-      <axesHelper args={[10]} />
+      {/* <axesHelper args={[10]} /> */}
       <Maze />
       <OrbitControls />
     </Canvas>

@@ -6,7 +6,8 @@ import { Center } from "@react-three/drei";
 const tempObject = new THREE.Object3D();
 export default function Maze() {
   // related to maze dimensions
-  const { grid, maze_col, maze_row, cube_size } = useGenerateMazeCoords();
+  const { grid } = useGenerateMazeCoords();
+  const { maze_col, maze_row, cube_size } = mazeConfig;
   const group = useRef();
 
   useLayoutEffect(() => {
@@ -19,11 +20,9 @@ export default function Maze() {
 
     // center the group
     const box3D = new THREE.Box3().setFromObject(group.current);
-    console.log(box3D);
+    console.log(Math.floor(maze_col / 2));
 
-    // new THREE.Box3()
-    // box3D.getCenter(vector);
-    // group.current.position.set(-vector.x, -vector.y, -vector.z);
+    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
   }, [cube_size]);
   const ref = useRef();
 
@@ -38,6 +37,14 @@ export default function Maze() {
   );
 }
 
+function useRandomDirection() {
+  const all_directions = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ];
+}
 function useGenerateMazeCoords() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
 
@@ -51,7 +58,7 @@ function useGenerateMazeCoords() {
     }
   }, []);
 
-  return { grid, maze_col, maze_row, cube_size };
+  return { grid };
 }
 class Cell {
   constructor(x, y, z) {
