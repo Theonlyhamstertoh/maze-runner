@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useMemo } from "react";
+import React, { useRef, useLayoutEffect, useMemo, useState } from "react";
 import { mazeConfig } from "./store";
 import * as THREE from "three";
 import { Center } from "@react-three/drei";
@@ -37,16 +37,30 @@ export default function Maze() {
   );
 }
 
-function useRandomDirection() {
+function randomDirection() {
   const all_directions = [
     [1, 0],
     [-1, 0],
     [0, 1],
     [0, -1],
   ];
+
+  for (let i = all_directions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all_directions[i], all_directions[j]] = [all_directions[j], all_directions[i]];
+  }
+  return all_directions;
+}
+
+function useVisited() {
+  const [visited, setVisited] = useState([]);
+  console.log("RUn");
+  return { visited, setVisited };
 }
 function useGenerateMazeCoords() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
+  const all_direction = randomDirection();
+  const { visited, setVisited } = useVisited();
 
   const grid = useMemo(() => []);
 
@@ -65,6 +79,8 @@ class Cell {
     this.x = x;
     this.y = y;
     this.z = z;
+
+    this.visited = false;
   }
 
   show() {
