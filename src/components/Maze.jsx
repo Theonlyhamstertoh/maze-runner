@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect, useMemo, useState, useEffect } from "react";
+import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallback } from "react";
 import useMazeStore, { mazeConfig } from "./store";
 import * as THREE from "three";
 import Cell from "./Cell";
@@ -15,19 +15,20 @@ export default function Maze() {
   const group = useRef();
   const ref = useRef();
   const { maze_col, maze_row, cube_size } = mazeConfig;
-  // const { stack } = useGenerateMazeCoords();
-  // useLayoutEffect(() => {
-  //   if (stack.length === 0) return;
-  //   stack.forEach((cell, i) => {
-  //     tempObject.position.set(cell.x, cell.y, cell.z);
-  //     tempObject.updateMatrix();
-  //     ref.current.setMatrixAt(i, tempObject.matrix);
-  //   });
-  //   ref.current.instanceMatrix.needsUpdate = true;
+  const stack = useCallback(() => create_passage(), []);
+  useLayoutEffect(() => {
+    const nodes = stack();
+    if (nodes.length === 0) return;
+    nodes.forEach((cell, i) => {
+      tempObject.position.set(cell.x, cell.y, cell.z);
+      tempObject.updateMatrix();
+      ref.current.setMatrixAt(i, tempObject.matrix);
+    });
+    ref.current.instanceMatrix.needsUpdate = true;
 
-  //   // center the group
-  //   group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
-  // }, [stack]);
+    // center the group
+    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
+  }, [stack]);
 
   const totalSize = maze_col * maze_row;
   return (
@@ -77,12 +78,37 @@ function create_passage() {
     // get the newest item (or the last item in array) pushed and its value
     const { x, z, visited } = stack[stack.length - 1];
     const possibleDirections = findDirectionsToMove(x, z, grid);
-    console.log(possibleDirections);
-    stack.pop();
+    // check to make sure there are possible directions to move
+    if (possibleDirections === null) return stack;
+    const moveToGridPoint = carve_passage_from(x, z, grid, possibleDirections);
+
+    // change starting position if haven't
+    if (!stack[0].visited) stack[0].visited = true;
+    // push the current position onto stack
+    stack.push(moveToGridPoint);
+    // console.log(stack);
+    // stack.pop();
   }
+
+  return stack;
 }
 create_passage();
 
+function carve_passage_from(x, z, grid, possibleDirections) {
+  // pick a random index
+  const randomIndex = Math.floor(Math.random() * possibleDirections.length);
+  // select the random direction
+  const chosenDirection = possibleDirections[randomIndex];
+  const fromGridPoint = grid[x][z];
+  const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
+
+  // set previous position as visited
+  fromGridPoint.visited = true;
+
+  return moveToGridPoint;
+}
+
+// this function will find all possible directions the current generator can move. It will return them as a array.
 function findDirectionsToMove(x, z, grid) {
   // randomly chose a direction to go from
   const cardinalDirections = randomizeOrder(all_directions);
@@ -110,27 +136,8 @@ function findDirectionsToMove(x, z, grid) {
     }
   });
 
-  return possibleDirection || null;
-}
-function carve_passage_from(x, z, grid, stack, setMazedGenerated) {
-  if (possibleDirection.length === 0) {
-    return setMazedGenerated(true);
-  }
-  // pick a random index
-  const randomIndex = Math.floor(Math.random() * possibleDirection.length);
-  // select the random direction
-  const chosenDirection = possibleDirection[randomIndex];
-  const fromGridPoint = grid[x][z];
-  const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
-
-  // set previous position as visited
-  fromGridPoint.visited = true;
-
-  // push the current position onto stack
-  stack.push(moveToGridPoint);
-
-  // call itself recursively until no more direction available
-  carve_passage_from(chosenDirection.x, chosenDirection.z, grid, stack, setMazedGenerated);
+  // return null if no directions, else return directions
+  return possibleDirection.length === 0 ? null : possibleDirection;
 }
 
 /**
