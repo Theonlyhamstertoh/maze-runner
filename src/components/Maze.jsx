@@ -2,7 +2,7 @@ import React, { useRef, useLayoutEffect, useMemo, useState, useEffect } from "re
 import useStore, { mazeConfig } from "./store";
 import * as THREE from "three";
 import Cell from "./Cell";
-import randomDirection from "./utilities/randomDirection";
+import randomizeOrder from "./utilities/randomizeOrder";
 const tempObject = new THREE.Object3D();
 
 /**
@@ -52,7 +52,7 @@ function useGenerateMazeCoords() {
   // const { visited, setVisited, unvisited, setUnvisited } = useVisit();
 
   useLayoutEffect(() => {
-    const visited = [];
+    const stack = [];
     const grid = [];
     for (let x = 0; x < maze_col; x++) {
       grid[x] = [];
@@ -60,7 +60,7 @@ function useGenerateMazeCoords() {
         grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false };
       }
     }
-    carve_passage_from(0, 0, grid);
+    carve_passage_from(0, 0, grid, stack);
   }, []);
 
   // return { unvisited };
@@ -68,26 +68,59 @@ function useGenerateMazeCoords() {
 
 const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
 const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
-function carve_passage_from(x, z, grid) {
-  const cardinalDirections = randomDirection();
+const all_directions = ["E", "W", "S", "N"];
 
+/**
+ *
+ * @param {number} x - point that we will carve _from_
+ * @param {number} z - point that we will carve _from_
+ * @param {array} grid - array of all the points
+ * @param {array} stack - array of visited points. Newest on top
+ */
+
+let i = 0;
+function carve_passage_from(x, z, grid, stack) {
+  // randomly chose a direction to go from
+  const cardinalDirections = randomizeOrder(all_directions);
+
+  const possibleDirection = [];
   cardinalDirections.forEach((cardinal) => {
     const newXPoint = x + convertToXDirection[cardinal];
     const newZPoint = z + convertToZDirection[cardinal];
-    // first check if x is
-    if (
-      grid.length - 1 >= newXPoint &&
-      0 <= newXPoint &&
-      -grid.length <= newZPoint &&
-      0 >= newZPoint
-    ) {
-      // because z goes south, points are negative.
-      if (-grid.length <= newZPoint && 0 >= newZPoint) {
-        // problem is that there is no -1 or -100 index in a array. So we wrap it in a absolute to make it positive.
-        console.log(grid[newXPoint][Math.abs(newZPoint)]);
+    // first check if x is in valid range
+    if (grid.length - 1 >= newXPoint && 0 <= newXPoint) {
+      // We also check if z is in valid range.
+      if (grid.length - 1 >= newZPoint && 0 <= newZPoint) {
+        // moveToGridPoint represent the point we will be moving to next. In another word, the new position
+        const potentialNewPoint = grid[newXPoint][newZPoint];
+        // fromGridPoint is the point we are currently at.
+        const fromGridPoint = grid[x][z];
+
+        // check for visited points
+        if (potentialNewPoint.visited === false) {
+          // once we are here, it means we have found a viable path and a unvisited point.
+          // first, set the point we move to
+          // console.log(i++);
+          possibleDirection.push({ x: newXPoint, z: newZPoint });
+        } else {
+          // console.log(stack);
+        }
       }
     }
   });
+  if (possibleDirection.length === 0) return console.log(stack);
+  // pick a random index
+  const randomIndex = Math.floor(Math.random() * possibleDirection.length);
+  // select the random direction
+  const chosenDirection = possibleDirection[randomIndex];
+
+  console.log(possibleDirection);
+  const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
+  stack.push(moveToGridPoint);
+  moveToGridPoint.visited = true;
+
+  // call itself recursively until no more direction available
+  carve_passage_from(chosenDirection.x, chosenDirection.z, grid, stack);
 }
 
 /**
