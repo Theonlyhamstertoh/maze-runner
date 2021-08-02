@@ -15,19 +15,19 @@ export default function Maze() {
   const group = useRef();
   const ref = useRef();
   const { maze_col, maze_row, cube_size } = mazeConfig;
-  const { stack } = useGenerateMazeCoords();
-  useLayoutEffect(() => {
-    if (stack.length === 0) return;
-    stack.forEach((cell, i) => {
-      tempObject.position.set(cell.x, cell.y, cell.z);
-      tempObject.updateMatrix();
-      ref.current.setMatrixAt(i, tempObject.matrix);
-    });
-    ref.current.instanceMatrix.needsUpdate = true;
+  // const { stack } = useGenerateMazeCoords();
+  // useLayoutEffect(() => {
+  //   if (stack.length === 0) return;
+  //   stack.forEach((cell, i) => {
+  //     tempObject.position.set(cell.x, cell.y, cell.z);
+  //     tempObject.updateMatrix();
+  //     ref.current.setMatrixAt(i, tempObject.matrix);
+  //   });
+  //   ref.current.instanceMatrix.needsUpdate = true;
 
-    // center the group
-    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
-  }, [stack]);
+  //   // center the group
+  //   group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
+  // }, [stack]);
 
   const totalSize = maze_col * maze_row;
   return (
@@ -46,51 +46,49 @@ export default function Maze() {
  *
  */
 
-function useGenerateMazeCoords() {
-  const { maze_col, maze_row, cube_size } = mazeConfig;
-  // const { visited, setVisited, unvisited, setUnvisited } = useVisit();
-  const [mazedGenerated, setMazedGenerated] = useMazeStore((state) => [
-    state.mazedGenerated,
-    state.setMazedGenerated,
-  ]);
-
-  const stack = [];
-  const grid = [];
-  useLayoutEffect(() => {
-    for (let x = 0; x < maze_col; x++) {
-      grid[x] = [];
-      for (let z = 0; z < maze_row; z++) {
-        grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false };
-      }
-    }
-    carve_passage_from(0, 0, grid, stack, setMazedGenerated);
-  }, []);
-
-  useEffect(() => {
-    console.log(generateMaze);
-  }, [generateMaze]);
-  return { stack };
-}
+function useGenerateMazeCoords() {}
 
 const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
 const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
 const all_directions = ["E", "W", "S", "N"];
+function create_passage() {
+  const { maze_col, maze_row, cube_size } = mazeConfig;
 
-/**
- *
- * @param {number} x - point that we will carve _from_
- * @param {number} z - point that we will carve _from_
- * @param {array} grid - array of all the points
- * @param {array} stack - array of visited points. Newest on top
- *
- * This will generate the starting position that we want to start "carving"
- */
+  // initialize starting maze point
+  const stack = [{ x: 0, y: 0, z: 0, visited: false }];
 
-function carve_passage_from(x, z, grid, stack, setMazedGenerated) {
+  // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
+  const grid = [];
+
+  // fills the array with arrays to make it multi-dimensional (to think of it, think of a table. The x becomes the columns and the z becomes the rows)
+  // ex. [ [ {...code}, {...code} ] ] => array[0][1]
+  for (let x = 0; x < maze_col; x++) {
+    // initialize this index as a array
+    grid[x] = [];
+    for (let z = 0; z < maze_row; z++) {
+      // create a object at this index position inside array of an array.
+      // ex. [ [ {...code}, {...code} ] ]
+      grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false };
+    }
+  }
+
+  // The implementation of the maze that generates the maze coordinates.
+  while (stack.length !== 0) {
+    // get the newest item (or the last item in array) pushed and its value
+    const { x, z, visited } = stack[stack.length - 1];
+    const possibleDirections = findDirectionsToMove(x, z, grid);
+    console.log(possibleDirections);
+    stack.pop();
+  }
+}
+create_passage();
+
+function findDirectionsToMove(x, z, grid) {
   // randomly chose a direction to go from
   const cardinalDirections = randomizeOrder(all_directions);
 
   const possibleDirection = [];
+  // this will generate possible directions
   cardinalDirections.forEach((cardinal) => {
     const newXPoint = x + convertToXDirection[cardinal];
     const newZPoint = z + convertToZDirection[cardinal];
@@ -111,6 +109,10 @@ function carve_passage_from(x, z, grid, stack, setMazedGenerated) {
       }
     }
   });
+
+  return possibleDirection || null;
+}
+function carve_passage_from(x, z, grid, stack, setMazedGenerated) {
   if (possibleDirection.length === 0) {
     return setMazedGenerated(true);
   }
