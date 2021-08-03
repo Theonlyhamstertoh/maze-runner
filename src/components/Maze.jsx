@@ -37,7 +37,7 @@ export default function Maze() {
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize]}>
         <boxBufferGeometry args={[cube_size, cube_size, cube_size]} />
-        <meshBasicMaterial color="lightblue" />
+        <meshBasicMaterial color="lightblue" wireframe />
       </instancedMesh>
     </group>
   );
@@ -58,13 +58,14 @@ function create_passage() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
 
   // initialize starting maze point
-  const stack = [{ x: 0, y: 0, z: 0, visited: false }];
+  const stack = [{ x: 0, y: 0, z: 0, visited: false, direction: null }];
   const visited = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
   const grid = [];
 
-  // deadend array
-  const deadEnd = [];
+  // maze wall array
+  const mazeWall = [];
+
   // fills the array with arrays to make it multi-dimensional (to think of it, think of a table. The x becomes the columns and the z becomes the rows)
   // ex. [ [ {...code}, {...code} ] ] => array[0][1]
   for (let x = 0; x < maze_col; x++) {
@@ -73,7 +74,7 @@ function create_passage() {
     for (let z = 0; z < maze_row; z++) {
       // create a object at this index position inside array of an array.
       // ex. [ [ {...code}, {...code} ] ]
-      grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false };
+      grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false, direction: null };
     }
   }
 
@@ -83,21 +84,23 @@ function create_passage() {
     const currentPoint = stack[stack.length - 1];
     const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
 
-    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     // check to make sure there are possible directions to move
     if (possibleDirections === null) {
       // if we hit a dead-end, go back to the previous position
       stack.pop();
     } else {
-      const moveToGridPoint = carve_passage_from(grid, possibleDirections, stack);
-
+      // return the new point and direction the generator will move towards
+      const [moveToGridPoint, chosenDirection] = carve_passage_from(grid, possibleDirections);
+      // set the direction
+      currentPoint.direction = chosenDirection.direction;
       // push the current position onto stack
       stack.push(moveToGridPoint);
 
-      // change starting position if haven't
-      if (!stack[0].visited) stack[0].visited = true;
+      // push maze wall
+      stack.length === 20 && console.log(...stack);
     }
 
+    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     if (currentPoint.visited === false) visited.push(currentPoint);
     currentPoint.visited = true;
   }
@@ -111,8 +114,7 @@ function carve_passage_from(grid, possibleDirections, stack) {
   // select the random direction
   const chosenDirection = possibleDirections[randomIndex];
   const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
-
-  return moveToGridPoint;
+  return [moveToGridPoint, chosenDirection];
 }
 
 // this function will find all possible directions the current generator can move. It will return them as a array.
@@ -137,7 +139,7 @@ function findDirectionsToMove(x, z, grid) {
         if (potentialNewPoint.visited === false) {
           // once we are here, it means we have found a viable path and a unvisited point.
           // push any potential paths to the array for access below
-          possibleDirection.push({ x: newXPoint, z: newZPoint });
+          possibleDirection.push({ x: newXPoint, z: newZPoint, direction: cardinal });
         }
       }
     }
