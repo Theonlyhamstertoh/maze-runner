@@ -3,7 +3,9 @@ import useMazeStore, { mazeConfig } from "./store";
 import * as THREE from "three";
 import Cell from "./Cell";
 import randomizeOrder from "./utilities/randomizeOrder";
+import { useFrame } from "@react-three/fiber";
 const tempObject = new THREE.Object3D();
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 /**
  *
  * Maze Displayer
@@ -35,7 +37,7 @@ export default function Maze() {
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize]}>
         <boxBufferGeometry args={[cube_size, cube_size, cube_size]} />
-        <meshBasicMaterial color="lightblue" wireframe />
+        <meshBasicMaterial color="lightblue" />
       </instancedMesh>
     </group>
   );
@@ -57,10 +59,12 @@ function create_passage() {
 
   // initialize starting maze point
   const stack = [{ x: 0, y: 0, z: 0, visited: false }];
-
+  const visited = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
   const grid = [];
 
+  // deadend array
+  const deadEnd = [];
   // fills the array with arrays to make it multi-dimensional (to think of it, think of a table. The x becomes the columns and the z becomes the rows)
   // ex. [ [ {...code}, {...code} ] ] => array[0][1]
   for (let x = 0; x < maze_col; x++) {
@@ -76,34 +80,37 @@ function create_passage() {
   // The implementation of the maze that generates the maze coordinates.
   while (stack.length !== 0) {
     // get the newest item (or the last item in array) pushed and its value
-    const { x, z, visited } = stack[stack.length - 1];
-    const possibleDirections = findDirectionsToMove(x, z, grid);
+    const currentPoint = stack[stack.length - 1];
+    const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
+
+    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     // check to make sure there are possible directions to move
-    if (possibleDirections === null) return stack;
-    const moveToGridPoint = carve_passage_from(x, z, grid, possibleDirections);
+    if (possibleDirections === null) {
+      // if we hit a dead-end, go back to the previous position
+      stack.pop();
+    } else {
+      const moveToGridPoint = carve_passage_from(grid, possibleDirections, stack);
 
-    // change starting position if haven't
-    if (!stack[0].visited) stack[0].visited = true;
-    // push the current position onto stack
-    stack.push(moveToGridPoint);
-    // console.log(stack);
-    // stack.pop();
+      // push the current position onto stack
+      stack.push(moveToGridPoint);
+
+      // change starting position if haven't
+      if (!stack[0].visited) stack[0].visited = true;
+    }
+
+    if (currentPoint.visited === false) visited.push(currentPoint);
+    currentPoint.visited = true;
   }
-
-  return stack;
+  return visited;
 }
 create_passage();
 
-function carve_passage_from(x, z, grid, possibleDirections) {
+function carve_passage_from(grid, possibleDirections, stack) {
   // pick a random index
   const randomIndex = Math.floor(Math.random() * possibleDirections.length);
   // select the random direction
   const chosenDirection = possibleDirections[randomIndex];
-  const fromGridPoint = grid[x][z];
   const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
-
-  // set previous position as visited
-  fromGridPoint.visited = true;
 
   return moveToGridPoint;
 }
