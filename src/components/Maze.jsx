@@ -4,7 +4,6 @@ import * as THREE from "three";
 import Cell from "./Cell";
 import randomizeOrder from "./utilities/randomizeOrder";
 import { useFrame } from "@react-three/fiber";
-const tempObject = new THREE.Object3D();
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 /**
  *
@@ -12,6 +11,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  *
  */
 
+const tempObject = new THREE.Object3D();
 export default function Maze() {
   // related to maze dimensions
   const group = useRef();
@@ -22,9 +22,33 @@ export default function Maze() {
     const nodes = stack();
     if (nodes.length === 0) return;
     nodes.forEach((cell, i) => {
-      tempObject.position.set(cell.x, cell.y, cell.z);
-      tempObject.updateMatrix();
-      ref.current.setMatrixAt(i, tempObject.matrix);
+      // i < 10 && console.log(cell);
+      tempObject.rotation.y = 0;
+      if (cell.east) {
+        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+        tempObject.updateMatrix();
+        ref.current.setMatrixAt(i, tempObject.matrix);
+      }
+
+      if (cell.west) {
+        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+        tempObject.updateMatrix();
+        ref.current.setMatrixAt(i, tempObject.matrix);
+      }
+
+      if (cell.north) {
+        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+        tempObject.rotation.y = Math.PI / 2;
+        tempObject.updateMatrix();
+        ref.current.setMatrixAt(i, tempObject.matrix);
+      }
+
+      if (cell.west) {
+        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+        tempObject.rotation.y = Math.PI / 2;
+        tempObject.updateMatrix();
+        ref.current.setMatrixAt(i, tempObject.matrix);
+      }
     });
     ref.current.instanceMatrix.needsUpdate = true;
 
@@ -35,7 +59,7 @@ export default function Maze() {
   const totalSize = maze_col * maze_row;
   return (
     <group ref={group}>
-      <instancedMesh ref={ref} args={[null, null, totalSize]}>
+      <instancedMesh ref={ref} args={[null, null, totalSize * 4]}>
         <boxBufferGeometry args={[0.01, cube_size / 2, 1]} />
         <meshBasicMaterial color="lightblue" />
       </instancedMesh>
@@ -60,19 +84,7 @@ function create_passage() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
 
   // initialize starting maze point
-  const stack = [
-    {
-      x: 0,
-      y: 0,
-      z: 0,
-      visited: true,
-      direction: null,
-      north: true,
-      east: true,
-      south: true,
-      west: true,
-    },
-  ];
+  const stack = [];
   const visited = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
   const grid = [];
@@ -102,17 +114,20 @@ function create_passage() {
     }
   }
 
+  stack.push(grid[0][0]);
   // The implementation of the maze that generates the maze coordinates.
-
+  console.clear();
   while (stack.length !== 0) {
     // get the newest item (or the last item in array) pushed and its value
     const currentPoint = stack[stack.length - 1];
-
     const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
-
     // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     if (currentPoint.visited === false) visited.push(currentPoint);
+    visited.length === 1 && console.log(...visited);
+    visited.length === 1 && console.log(currentPoint);
     currentPoint.visited = true;
+    visited.length === 1 && console.log("____________________");
+    visited.length === 1 && console.log(...visited);
 
     // check to make sure there are possible directions to move
     if (possibleDirections === null) {
@@ -122,9 +137,10 @@ function create_passage() {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
       breakWalls(currentPoint, moveToGridPoint);
+      visited.length === 1 && console.log(currentPoint);
+      visited.length === 1 && console.log(grid[currentPoint.x][currentPoint.z]);
       // push the current position onto stack
       stack.push(moveToGridPoint);
-      stack.length === 10 && console.log(...stack);
     }
   }
   return visited;
