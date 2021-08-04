@@ -140,9 +140,9 @@ function create_passage() {
     if (currentPoint.visited === false) visited.push(currentPoint);
     currentPoint.visited = true;
   }
+  console.log(visited);
   return visited;
 }
-create_passage();
 
 function breakWalls(currentPoint, moveToGridPoint) {
   // ex. if "E", return "W"
@@ -155,16 +155,11 @@ function breakWalls(currentPoint, moveToGridPoint) {
 
 function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
   // ex. cardinals === [true, true, false, true] (the order below matter)
-  console.log("-------------------------------");
-  console.log({ ...currentPoint });
   const wallBooleans = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
   wallBooleans.forEach((haveWall, i) => {
     if (haveWall) {
       // ex. true => "N" based on the current index
-      // here is teh problem. Even if cardinal is false, you are still iterating. But wait, it shouldn't be if the cardinal is false
       const direction = all_directions[i];
-      // console.log("CARDINAL: ", cardinal, "index", i);
-      console.log(direction, i);
       // get the following point
       const followingPoint = getNewPointsWithinRange(
         grid,
@@ -174,13 +169,11 @@ function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
       );
 
       // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
-      if (followingPoint && followingPoint[direction]) {
-        currentPoint[direction] = false;
-      }
+      // reverse to check if there are walls
+      const oppositeDirection = flipToOppositeDirection[direction];
+      if (followingPoint && followingPoint[direction]) currentPoint[oppositeDirection] = false;
     }
   });
-  console.log("-------------------------------");
-  // console.log(currentPoint);
 }
 
 function getNewPointsWithinRange(grid, cardinal, x, z) {
