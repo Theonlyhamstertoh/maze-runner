@@ -53,12 +53,26 @@ function useGenerateMazeCoords() {}
 
 const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
 const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
+const flipToOppositeDirection = { E: "W", S: "N", N: "S", W: "E" };
+const convertToFullWord = { E: "east", W: "west", N: "north", S: "south" };
 const all_directions = ["E", "W", "S", "N"];
 function create_passage() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
 
   // initialize starting maze point
-  const stack = [{ x: 0, y: 0, z: 0, visited: true, direction: null }];
+  const stack = [
+    {
+      x: 0,
+      y: 0,
+      z: 0,
+      visited: true,
+      direction: null,
+      north: true,
+      east: true,
+      south: true,
+      west: true,
+    },
+  ];
   const visited = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
   const grid = [];
@@ -74,7 +88,17 @@ function create_passage() {
     for (let z = 0; z < maze_row; z++) {
       // create a object at this index position inside array of an array.
       // ex. [ [ {...code}, {...code} ] ]
-      grid[x][z] = { x: x * cube_size, y: 0, z: z * cube_size, visited: false, direction: null };
+      grid[x][z] = {
+        x: x * cube_size,
+        y: 0,
+        z: z * cube_size,
+        visited: false,
+        direction: null,
+        north: true,
+        east: true,
+        south: true,
+        west: true,
+      };
     }
   }
 
@@ -97,15 +121,28 @@ function create_passage() {
     } else {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
-
+      breakWalls(currentPoint, moveToGridPoint);
       // push the current position onto stack
       stack.push(moveToGridPoint);
+      stack.length === 10 && console.log(...stack);
     }
   }
   return visited;
 }
 create_passage();
 
+function breakWalls(currentPoint, moveToGridPoint) {
+  // ex. Convert "E" => "East"
+  const direction = convertToFullWord[currentPoint.direction];
+  // ex. if "E", return "W"
+  const oppositeDirectionLetter = flipToOppositeDirection[currentPoint.direction];
+  // convert the abbreviation to full word
+  const oppositeDirectionFull = convertToFullWord[oppositeDirectionLetter];
+
+  // set the walls in the direction to false
+  currentPoint[direction] = false;
+  moveToGridPoint[oppositeDirectionFull] = false;
+}
 function carve_passage_from(grid, possibleDirections, currentPoint) {
   // pick a random index
   const randomIndex = Math.floor(Math.random() * possibleDirections.length);
@@ -147,20 +184,4 @@ function findDirectionsToMove(x, z, grid) {
 
   // return null if no directions, else return directions
   return possibleDirection.length === 0 ? null : possibleDirection;
-}
-
-/**
- *
- * visit hook that keeps track of nodes visited and unvisited.
- *
- */
-
-function useVisit() {
-  const [visited, setVisited] = useState([]);
-  const [unvisited, setUnvisited] = useState([]);
-
-  // useEffect(() => {
-  //   console.log(unvisited);
-  // }, [unvisited]);
-  return { visited, setVisited, unvisited, setUnvisited };
 }
