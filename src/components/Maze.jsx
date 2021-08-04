@@ -36,7 +36,7 @@ export default function Maze() {
   return (
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize]}>
-        <boxBufferGeometry args={[cube_size / 2, cube_size / 2, cube_size / 2]} />
+        <boxBufferGeometry args={[0.01, cube_size / 2, 1]} />
         <meshBasicMaterial color="lightblue" />
       </instancedMesh>
     </group>
