@@ -24,31 +24,31 @@ export default function Maze() {
     nodes.forEach((cell, i) => {
       // i < 10 && console.log(cell);
       tempObject.rotation.y = 0;
-      if (cell.east) {
+      if (cell.N) {
         tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
       }
 
-      if (cell.west) {
-        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
-      }
+      // if (cell.west) {
+      //   tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+      //   tempObject.updateMatrix();
+      //   ref.current.setMatrixAt(i, tempObject.matrix);
+      // }
 
-      if (cell.north) {
-        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-        tempObject.rotation.y = Math.PI / 2;
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
-      }
+      // if (cell.north) {
+      //   tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+      //   tempObject.rotation.y = Math.PI / 2;
+      //   tempObject.updateMatrix();
+      //   ref.current.setMatrixAt(i, tempObject.matrix);
+      // }
 
-      if (cell.west) {
-        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-        tempObject.rotation.y = Math.PI / 2;
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
-      }
+      // if (cell.west) {
+      //   tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+      //   tempObject.rotation.y = Math.PI / 2;
+      //   tempObject.updateMatrix();
+      //   ref.current.setMatrixAt(i, tempObject.matrix);
+      // }
     });
     ref.current.instanceMatrix.needsUpdate = true;
 
@@ -106,28 +106,22 @@ function create_passage() {
         z: z * cube_size,
         visited: false,
         direction: null,
-        north: true,
-        east: true,
-        south: true,
-        west: true,
+        N: true,
+        E: true,
+        S: true,
+        W: true,
       };
     }
   }
 
+  // push initial starting point. In future, this can be a random point so the starting position is unique.
   stack.push(grid[0][0]);
+
   // The implementation of the maze that generates the maze coordinates.
-  console.clear();
   while (stack.length !== 0) {
     // get the newest item (or the last item in array) pushed and its value
     const currentPoint = stack[stack.length - 1];
     const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
-    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
-    if (currentPoint.visited === false) visited.push(currentPoint);
-    visited.length === 1 && console.log(...visited);
-    visited.length === 1 && console.log(currentPoint);
-    currentPoint.visited = true;
-    visited.length === 1 && console.log("____________________");
-    visited.length === 1 && console.log(...visited);
 
     // check to make sure there are possible directions to move
     if (possibleDirections === null) {
@@ -137,34 +131,69 @@ function create_passage() {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
       breakWalls(currentPoint, moveToGridPoint);
-      visited.length === 1 && console.log(currentPoint);
-      visited.length === 1 && console.log(grid[currentPoint.x][currentPoint.z]);
+      checkForDuplicateWalls(currentPoint, grid);
       // push the current position onto stack
       stack.push(moveToGridPoint);
     }
+
+    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
+    if (currentPoint.visited === false) visited.push(currentPoint);
+    currentPoint.visited = true;
   }
+  console.log(visited);
   return visited;
 }
 create_passage();
 
 function breakWalls(currentPoint, moveToGridPoint) {
-  // ex. Convert "E" => "East"
-  const direction = convertToFullWord[currentPoint.direction];
   // ex. if "E", return "W"
-  const oppositeDirectionLetter = flipToOppositeDirection[currentPoint.direction];
-  // convert the abbreviation to full word
-  const oppositeDirectionFull = convertToFullWord[oppositeDirectionLetter];
+  const oppositeDirection = flipToOppositeDirection[currentPoint.direction];
 
   // set the walls in the direction to false
-  currentPoint[direction] = false;
-  moveToGridPoint[oppositeDirectionFull] = false;
+  currentPoint[currentPoint.direction] = false;
+  moveToGridPoint[oppositeDirection] = false;
+}
+
+function checkForDuplicateWalls(currentPoint, grid) {
+  // ex. cardinals === [true, true, false, true] (the order below matter)
+  const cardinals = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
+  cardinals.forEach((cardinal, i) => {
+    if (cardinal) {
+      // ex. true => "North" based on the current index
+      const direction = all_directions[i];
+      // get the following point
+      const followingPoint = getNewPointsWithinRange(
+        grid,
+        direction,
+        currentPoint.x,
+        currentPoint.z
+      );
+
+      // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
+      if (followingPoint && followingPoint[direction]) currentPoint[direction] = false;
+    }
+  });
+}
+
+function getNewPointsWithinRange(grid, cardinal, x, z) {
+  const newXPoint = x + convertToXDirection[cardinal];
+  const newZPoint = z + convertToZDirection[cardinal];
+
+  // first check if x is in valid range
+  if (grid.length - 1 >= newXPoint && 0 <= newXPoint) {
+    // We also check if z is in valid range.
+    if (grid.length - 1 >= newZPoint && 0 <= newZPoint) {
+      const newPoint = grid[newXPoint][newZPoint];
+      return newPoint;
+    }
+  }
+  return null;
 }
 function carve_passage_from(grid, possibleDirections, currentPoint) {
   // pick a random index
   const randomIndex = Math.floor(Math.random() * possibleDirections.length);
   // select the random direction
   const chosenDirection = possibleDirections[randomIndex];
-
   const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
   currentPoint.direction = chosenDirection.direction;
   return moveToGridPoint;
@@ -178,23 +207,19 @@ function findDirectionsToMove(x, z, grid) {
   const possibleDirection = [];
   // this will generate possible directions
   cardinalDirections.forEach((cardinal) => {
-    const newXPoint = x + convertToXDirection[cardinal];
-    const newZPoint = z + convertToZDirection[cardinal];
-    // first check if x is in valid range
-    if (grid.length - 1 >= newXPoint && 0 <= newXPoint) {
-      // We also check if z is in valid range.
-      if (grid.length - 1 >= newZPoint && 0 <= newZPoint) {
-        // moveToGridPoint represent the point we will be moving to next. In another word, the new position
-        const potentialNewPoint = grid[newXPoint][newZPoint];
-        // fromGridPoint is the point we are currently at.
+    // moveToGridPoint represent the point we will be moving to next. In another word, the new position
+    const possibleNewPosition = getNewPointsWithinRange(grid, cardinal, x, z);
+    // fromGridPoint is the point we are currently at.
 
-        // check for visited points
-        if (potentialNewPoint.visited === false) {
-          // once we are here, it means we have found a viable path and a unvisited point.
-          // push any potential paths to the array for access below
-          possibleDirection.push({ x: newXPoint, z: newZPoint, direction: cardinal });
-        }
-      }
+    // check for visited points
+    if (possibleNewPosition && possibleNewPosition.visited === false) {
+      // once we are here, it means we have found a viable path and a unvisited point.
+      // push any potential paths to the array for access below
+      possibleDirection.push({
+        x: possibleNewPosition.x,
+        z: possibleNewPosition.z,
+        direction: cardinal,
+      });
     }
   });
 
