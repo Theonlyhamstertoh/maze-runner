@@ -131,7 +131,7 @@ function create_passage() {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
       breakWalls(currentPoint, moveToGridPoint);
-      checkForDuplicateWalls(currentPoint, grid);
+      stack.length < 10 && checkForDuplicateWalls(currentPoint, grid, moveToGridPoint);
       // push the current position onto stack
       stack.push(moveToGridPoint);
     }
@@ -140,7 +140,6 @@ function create_passage() {
     if (currentPoint.visited === false) visited.push(currentPoint);
     currentPoint.visited = true;
   }
-  console.log(visited);
   return visited;
 }
 create_passage();
@@ -154,13 +153,18 @@ function breakWalls(currentPoint, moveToGridPoint) {
   moveToGridPoint[oppositeDirection] = false;
 }
 
-function checkForDuplicateWalls(currentPoint, grid) {
+function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
   // ex. cardinals === [true, true, false, true] (the order below matter)
-  const cardinals = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
-  cardinals.forEach((cardinal, i) => {
-    if (cardinal) {
-      // ex. true => "North" based on the current index
+  console.log("-------------------------------");
+  console.log({ ...currentPoint });
+  const wallBooleans = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
+  wallBooleans.forEach((haveWall, i) => {
+    if (haveWall) {
+      // ex. true => "N" based on the current index
+      // here is teh problem. Even if cardinal is false, you are still iterating. But wait, it shouldn't be if the cardinal is false
       const direction = all_directions[i];
+      // console.log("CARDINAL: ", cardinal, "index", i);
+      console.log(direction, i);
       // get the following point
       const followingPoint = getNewPointsWithinRange(
         grid,
@@ -170,9 +174,13 @@ function checkForDuplicateWalls(currentPoint, grid) {
       );
 
       // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
-      if (followingPoint && followingPoint[direction]) currentPoint[direction] = false;
+      if (followingPoint && followingPoint[direction]) {
+        currentPoint[direction] = false;
+      }
     }
   });
+  console.log("-------------------------------");
+  // console.log(currentPoint);
 }
 
 function getNewPointsWithinRange(grid, cardinal, x, z) {
@@ -202,8 +210,7 @@ function carve_passage_from(grid, possibleDirections, currentPoint) {
 // this function will find all possible directions the current generator can move. It will return them as a array.
 function findDirectionsToMove(x, z, grid) {
   // randomly chose a direction to go from
-  const cardinalDirections = randomizeOrder(all_directions);
-
+  const cardinalDirections = randomizeOrder([...all_directions]);
   const possibleDirection = [];
   // this will generate possible directions
   cardinalDirections.forEach((cardinal) => {
