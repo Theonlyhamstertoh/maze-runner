@@ -24,10 +24,12 @@ export default function Maze() {
     if (nodes.length === 0) return;
     let i = 0;
     nodes.forEach((cell) => {
+      console.log([cell.N, cell.E, cell.S, cell.W]);
+
       // problem is that all of them are sharing the same index, which means it is overwritten.
       if (cell.N) {
-        tempObject.rotation.y = 0;
         tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
+        tempObject.rotation.y = Math.PI / 2;
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
         ref.current.setColorAt(i, new THREE.Color("orange"));
@@ -35,8 +37,8 @@ export default function Maze() {
         i++;
       }
       if (cell.E) {
+        tempObject.rotation.y = 0;
         tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-        tempObject.rotation.y = Math.PI / 2;
         tempObject.updateMatrix();
         ref.current.setColorAt(i, new THREE.Color("purple"));
         ref.current.setMatrixAt(i, tempObject.matrix);
@@ -44,7 +46,7 @@ export default function Maze() {
         i++;
       }
       if (cell.S) {
-        tempObject.rotation.y = 0;
+        tempObject.rotation.y = Math.PI / 2;
         tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
         tempObject.updateMatrix();
         ref.current.setColorAt(i, new THREE.Color("blue"));
@@ -53,8 +55,8 @@ export default function Maze() {
         i++;
       }
       if (cell.W) {
+        tempObject.rotation.y = 0;
         tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-        tempObject.rotation.y = Math.PI / 2;
 
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
