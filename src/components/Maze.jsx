@@ -22,33 +22,12 @@ export default function Maze() {
     const nodes = stack();
     if (nodes.length === 0) return;
     nodes.forEach((cell, i) => {
-      // i < 10 && console.log(cell);
       tempObject.rotation.y = 0;
       if (cell.N) {
         tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
       }
-
-      // if (cell.west) {
-      //   tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-      //   tempObject.updateMatrix();
-      //   ref.current.setMatrixAt(i, tempObject.matrix);
-      // }
-
-      // if (cell.north) {
-      //   tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-      //   tempObject.rotation.y = Math.PI / 2;
-      //   tempObject.updateMatrix();
-      //   ref.current.setMatrixAt(i, tempObject.matrix);
-      // }
-
-      // if (cell.west) {
-      //   tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-      //   tempObject.rotation.y = Math.PI / 2;
-      //   tempObject.updateMatrix();
-      //   ref.current.setMatrixAt(i, tempObject.matrix);
-      // }
     });
     ref.current.instanceMatrix.needsUpdate = true;
 
@@ -59,7 +38,7 @@ export default function Maze() {
   const totalSize = maze_col * maze_row;
   return (
     <group ref={group}>
-      <instancedMesh ref={ref} args={[null, null, totalSize * 4]}>
+      <instancedMesh ref={ref} args={[null, null, totalSize]}>
         <boxBufferGeometry args={[0.01, cube_size / 2, 1]} />
         <meshBasicMaterial color="lightblue" />
       </instancedMesh>
@@ -82,7 +61,6 @@ const convertToFullWord = { E: "east", W: "west", N: "north", S: "south" };
 const all_directions = ["E", "W", "S", "N"];
 function create_passage() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
-
   // initialize starting maze point
   const stack = [];
   const visited = [];
@@ -161,7 +139,7 @@ function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
       // ex. true => "N" based on the current index
       const direction = all_directions[i];
       // get the following point
-      const followingPoint = getNewPointsWithinRange(
+      const neighborPoint = getNewPointsWithinRange(
         grid,
         direction,
         currentPoint.x,
@@ -171,7 +149,7 @@ function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
       // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
       // reverse to check if there are walls
       const oppositeDirection = flipToOppositeDirection[direction];
-      if (followingPoint && followingPoint[direction]) currentPoint[oppositeDirection] = false;
+      if (neighborPoint && neighborPoint[oppositeDirection]) currentPoint[direction] = false;
     }
   });
 }
