@@ -20,25 +20,59 @@ export default function Maze() {
   const stack = useCallback(() => create_passage(), []);
   useLayoutEffect(() => {
     const nodes = stack();
+    console.log(nodes);
     if (nodes.length === 0) return;
-    nodes.forEach((cell, i) => {
-      tempObject.rotation.y = 0;
+    let i = 0;
+    nodes.forEach((cell) => {
+      // problem is that all of them are sharing the same index, which means it is overwritten.
       if (cell.N) {
-        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+        tempObject.rotation.y = 0;
+        tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
+        ref.current.setColorAt(i, new THREE.Color("orange"));
+
+        i++;
+      }
+      if (cell.E) {
+        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+        tempObject.rotation.y = Math.PI / 2;
+        tempObject.updateMatrix();
+        ref.current.setColorAt(i, new THREE.Color("purple"));
+        ref.current.setMatrixAt(i, tempObject.matrix);
+
+        i++;
+      }
+      if (cell.S) {
+        tempObject.rotation.y = 0;
+        tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
+        tempObject.updateMatrix();
+        ref.current.setColorAt(i, new THREE.Color("blue"));
+        ref.current.setMatrixAt(i, tempObject.matrix);
+
+        i++;
+      }
+      if (cell.W) {
+        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+        tempObject.rotation.y = Math.PI / 2;
+
+        tempObject.updateMatrix();
+        ref.current.setMatrixAt(i, tempObject.matrix);
+        ref.current.setColorAt(i, new THREE.Color("green"));
+        i++;
       }
     });
     ref.current.instanceMatrix.needsUpdate = true;
+    ref.current.instanceColor.needsUpdate = true;
 
     // center the group
-    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
+    // group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
   }, [stack]);
 
   const totalSize = maze_col * maze_row;
   return (
     <group ref={group}>
-      <instancedMesh ref={ref} args={[null, null, totalSize]}>
+      <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
         <boxBufferGeometry args={[0.01, cube_size / 2, 1]} />
         <meshBasicMaterial color="lightblue" />
       </instancedMesh>
