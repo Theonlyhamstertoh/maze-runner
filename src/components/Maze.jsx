@@ -20,19 +20,15 @@ export default function Maze() {
   const stack = useCallback(() => create_passage(), []);
   useLayoutEffect(() => {
     const nodes = stack();
-    console.log(nodes);
     if (nodes.length === 0) return;
     let i = 0;
     nodes.forEach((cell) => {
-      console.log([cell.N, cell.E, cell.S, cell.W]);
-
       // problem is that all of them are sharing the same index, which means it is overwritten.
       if (cell.N) {
         tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
         tempObject.rotation.y = Math.PI / 2;
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
-        ref.current.setColorAt(i, new THREE.Color("orange"));
 
         i++;
       }
@@ -40,7 +36,6 @@ export default function Maze() {
         tempObject.rotation.y = 0;
         tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
         tempObject.updateMatrix();
-        ref.current.setColorAt(i, new THREE.Color("purple"));
         ref.current.setMatrixAt(i, tempObject.matrix);
 
         i++;
@@ -49,7 +44,6 @@ export default function Maze() {
         tempObject.rotation.y = Math.PI / 2;
         tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
         tempObject.updateMatrix();
-        ref.current.setColorAt(i, new THREE.Color("blue"));
         ref.current.setMatrixAt(i, tempObject.matrix);
 
         i++;
@@ -60,12 +54,11 @@ export default function Maze() {
 
         tempObject.updateMatrix();
         ref.current.setMatrixAt(i, tempObject.matrix);
-        ref.current.setColorAt(i, new THREE.Color("green"));
         i++;
       }
     });
     ref.current.instanceMatrix.needsUpdate = true;
-    ref.current.instanceColor.needsUpdate = true;
+    // ref.current.instanceColor.needsUpdate = true;
 
     // center the group
     group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
@@ -76,7 +69,7 @@ export default function Maze() {
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
         <boxBufferGeometry args={[0.2, cube_size / 2, 1]} />
-        <meshBasicMaterial color="lightblue" />
+        <meshBasicMaterial color="green" />
       </instancedMesh>
     </group>
   );
@@ -145,7 +138,7 @@ function create_passage() {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
       breakWalls(currentPoint, moveToGridPoint);
-      stack.length < 10 && checkForDuplicateWalls(currentPoint, grid, moveToGridPoint);
+      stack.length < 10 && removeDuplicateWalls(currentPoint, grid, moveToGridPoint);
       // push the current position onto stack
       stack.push(moveToGridPoint);
     }
@@ -154,7 +147,6 @@ function create_passage() {
     if (currentPoint.visited === false) visited.push(currentPoint);
     currentPoint.visited = true;
   }
-  console.log(visited);
   return visited;
 }
 
@@ -167,7 +159,7 @@ function breakWalls(currentPoint, moveToGridPoint) {
   moveToGridPoint[oppositeDirection] = false;
 }
 
-function checkForDuplicateWalls(currentPoint, grid, moveToGridPoint) {
+function removeDuplicateWalls(currentPoint, grid, moveToGridPoint) {
   // ex. cardinals === [true, true, false, true] (the order below matter)
   const wallBooleans = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
   wallBooleans.forEach((haveWall, i) => {
