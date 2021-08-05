@@ -4,8 +4,8 @@ import create from "zustand";
 
 export const mazeConfig = {
   // maze count should always be odd
-  maze_col: 3,
-  maze_row: 3,
+  maze_col: 35,
+  maze_row: 35,
   cube_size: 1,
 };
 

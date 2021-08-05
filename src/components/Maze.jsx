@@ -68,14 +68,14 @@ export default function Maze() {
     ref.current.instanceColor.needsUpdate = true;
 
     // center the group
-    // group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
+    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
   }, [stack]);
 
   const totalSize = maze_col * maze_row;
   return (
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
-        <boxBufferGeometry args={[0.01, cube_size / 2, 1]} />
+        <boxBufferGeometry args={[0.2, cube_size / 2, 1]} />
         <meshBasicMaterial color="lightblue" />
       </instancedMesh>
     </group>
