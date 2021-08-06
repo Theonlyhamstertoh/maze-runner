@@ -1,10 +1,8 @@
 import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallback } from "react";
 import useMazeStore, { mazeConfig } from "./store";
 import * as THREE from "three";
-import Cell from "./Cell";
 import randomizeOrder from "./utilities/randomizeOrder";
 import { useFrame } from "@react-three/fiber";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 /**
  *
  * Maze Displayer
@@ -68,8 +66,8 @@ export default function Maze() {
   return (
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
-        <boxBufferGeometry args={[0.2, cube_size / 2, 1]} />
-        <meshBasicMaterial color="green" />
+        <boxBufferGeometry args={[0.52, cube_size * 10, 1.52]} />
+        <meshNormalMaterial />
       </instancedMesh>
     </group>
   );
@@ -86,7 +84,6 @@ function useGenerateMazeCoords() {}
 const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
 const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
 const flipToOppositeDirection = { E: "W", S: "N", N: "S", W: "E" };
-const convertToFullWord = { E: "east", W: "west", N: "north", S: "south" };
 const all_directions = ["E", "W", "S", "N"];
 function create_passage() {
   const { maze_col, maze_row, cube_size } = mazeConfig;
@@ -95,9 +92,6 @@ function create_passage() {
   const visited = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
   const grid = [];
-
-  // maze wall array
-  const mazeWall = [];
 
   // fills the array with arrays to make it multi-dimensional (to think of it, think of a table. The x becomes the columns and the z becomes the rows)
   // ex. [ [ {...code}, {...code} ] ] => array[0][1]
