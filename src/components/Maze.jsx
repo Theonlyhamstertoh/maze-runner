@@ -14,47 +14,52 @@ export default function Maze() {
   // related to maze dimensions
   const group = useRef();
   const ref = useRef();
-  const { maze_col, maze_row, cube_size } = mazeConfig;
+  const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
   const stack = useCallback(() => create_passage(), []);
   useLayoutEffect(() => {
     const nodes = stack();
     if (nodes.length === 0) return;
     let i = 0;
-    nodes.forEach((cell) => {
-      // problem is that all of them are sharing the same index, which means it is overwritten.
-      if (cell.N) {
-        tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
-        tempObject.rotation.y = Math.PI / 2;
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
+    console.log(nodes);
+    for (let x = 0; x < maze_col; x++) {
+      for (let z = 0; z < maze_row; z++) {
+        const cell = nodes[x][z];
+        // problem is that all of them are sharing the same index, which means it is overwritten.
+        if (cell.N) {
+          tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
+          tempObject.rotation.y = Math.PI / 2;
+          tempObject.updateMatrix();
+          ref.current.setMatrixAt(i, tempObject.matrix);
 
-        i++;
-      }
-      if (cell.E) {
-        tempObject.rotation.y = 0;
-        tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
+          i++;
+        }
+        if (cell.E) {
+          tempObject.rotation.y = 0;
+          tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
+          tempObject.updateMatrix();
+          ref.current.setMatrixAt(i, tempObject.matrix);
 
-        i++;
-      }
-      if (cell.S) {
-        tempObject.rotation.y = Math.PI / 2;
-        tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
+          i++;
+        }
+        if (cell.S) {
+          tempObject.rotation.y = Math.PI / 2;
+          tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
+          tempObject.updateMatrix();
+          ref.current.setMatrixAt(i, tempObject.matrix);
 
-        i++;
-      }
-      if (cell.W) {
-        tempObject.rotation.y = 0;
-        tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
+          i++;
+        }
+        if (cell.W) {
+          tempObject.rotation.y = 0;
+          tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
 
-        tempObject.updateMatrix();
-        ref.current.setMatrixAt(i, tempObject.matrix);
-        i++;
+          tempObject.updateMatrix();
+          ref.current.setMatrixAt(i, tempObject.matrix);
+          i++;
+        }
       }
-    });
+    }
+
     ref.current.instanceMatrix.needsUpdate = true;
     // ref.current.instanceColor.needsUpdate = true;
 
@@ -66,7 +71,8 @@ export default function Maze() {
   return (
     <group ref={group}>
       <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
-        <boxBufferGeometry args={[0.52, cube_size * 10, 1.52]} />
+        <boxBufferGeometry args={[wall_width, wall_height, wall_depth]} />
+        {/* <boxBufferGeometry args={[0.52, cube_size * 10, 1.52]} /> */}
         <meshNormalMaterial />
       </instancedMesh>
     </group>
@@ -86,7 +92,7 @@ const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
 const flipToOppositeDirection = { E: "W", S: "N", N: "S", W: "E" };
 const all_directions = ["E", "W", "S", "N"];
 function create_passage() {
-  const { maze_col, maze_row, cube_size } = mazeConfig;
+  const { maze_col, maze_row, wall_width, wall_depth } = mazeConfig;
   // initialize starting maze point
   const stack = [];
   const visited = [];
@@ -102,9 +108,9 @@ function create_passage() {
       // create a object at this index position inside array of an array.
       // ex. [ [ {...code}, {...code} ] ]
       grid[x][z] = {
-        x: x * cube_size,
+        x: x * wall_width,
         y: 0,
-        z: z * cube_size,
+        z: z * wall_depth,
         visited: false,
         direction: null,
         N: true,
@@ -138,10 +144,9 @@ function create_passage() {
     }
 
     // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
-    if (currentPoint.visited === false) visited.push(currentPoint);
     currentPoint.visited = true;
   }
-  return visited;
+  return grid;
 }
 
 function breakWalls(currentPoint, moveToGridPoint) {

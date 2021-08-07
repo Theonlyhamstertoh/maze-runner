@@ -17,7 +17,7 @@ function App() {
     <Canvas
       camera={{ position: [0, 25, 0] }}
       onCreated={({ camera }) => (camera.rotation.z = Math.PI)}>
-      <gridHelper args={[75, 75]} />
+      {/* <gridHelper args={[75, 75]} /> */}
       <ambientLight />
       <directionalLight position={[0, 10, 10]} intensity={0.5} />
       <Stats />
@@ -25,7 +25,7 @@ function App() {
       {/* <Center alignTop> */}
       <Maze />
       {/* </Center> */}
-      <Floor />
+      {/* <Floor /> */}
       <MapControls />
       {/* <AnimatedMovingCube /> */}
       {/* <FlyControls dragToLook rollSpeed={0.5} /> */}
