@@ -2,15 +2,13 @@ import carve_passage_from from "./carvePassageFrom";
 import breakWalls from "./breakWalls";
 import removeDuplicateWalls from "./removeDuplicateWalls";
 import findDirectionsToMove from "./findDirectionsToMove";
-import { mazeConfig } from "../store";
 
 /**
  *
  * This function carves out the maze
  *
  */
-export default function create_maze() {
-  const { maze_col, maze_row } = mazeConfig;
+export default function create_maze({ maze_col, maze_row }) {
   // initialize starting maze point
   const stack = [];
   // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.

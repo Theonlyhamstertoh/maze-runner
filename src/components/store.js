@@ -2,17 +2,26 @@
 
 import create from "zustand";
 
-export const mazeConfig = {
-  // maze count should always be odd
-  maze_col: 15,
-  maze_row: 15,
-  wall_width: 0.2,
-  wall_height: 1,
-  wall_depth: 1,
-};
-
 const useMazeStore = create((set) => ({
   mazedGenerated: false,
+  level: 1,
+  mazeConfig: {
+    maze_col: 3,
+    maze_row: 3,
+    wall_width: 0.25,
+    wall_height: 1,
+    wall_depth: 1,
+  },
+  setMazeSize: (col, row) => {
+    set((state) => ({
+      mazeConfig: {
+        ...state.mazeConfig,
+        maze_col: col,
+        maze_row: row,
+      },
+    }));
+  },
+  nextLevel: () => set((state) => ({ level: state.level + 1 })),
   setMazedGenerated: (boolean) => set((state) => ({ mazedGenerated: boolean })),
 }));
 

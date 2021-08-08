@@ -1,5 +1,5 @@
 import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallback } from "react";
-import useMazeStore, { mazeConfig } from "./store";
+import useMazeStore from "./store";
 import * as THREE from "three";
 import useMaze from "./mazeLogic/useMaze";
 
@@ -20,8 +20,10 @@ export default function Maze() {
   const ref = useRef();
   const playerRef = useRef();
   const goalRef = useRef();
-  const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
-  const stack = useCallback(() => create_passage(), []);
+
+  const { maze_col, maze_row, wall_width, wall_height, wall_depth } = useMazeStore(
+    (state) => state.mazeConfig
+  );
   const [mazeMap] = useMaze();
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
@@ -83,7 +85,7 @@ export default function Maze() {
         </mesh>
         <mesh ref={playerRef}>
           <boxBufferGeometry args={[0.5, 0.5, 0.5]} />
-          <meshBasicMaterial color="blue" />
+          <meshBasicMaterial color="gold" />
         </mesh>
       </group>
     </>
