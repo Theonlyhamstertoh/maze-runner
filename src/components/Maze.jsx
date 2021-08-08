@@ -2,10 +2,11 @@ import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallba
 import useMazeStore from "./store";
 import * as THREE from "three";
 import useMaze from "./mazeLogic/useMaze";
+import { Html } from "@react-three/drei";
 
 /**
  *
- * Maze Displayer
+ *
  *
  */
 function giveRandomPosition(length, object) {
@@ -21,10 +22,9 @@ export default function Maze() {
   const playerRef = useRef();
   const goalRef = useRef();
 
-  const { maze_col, maze_row, wall_width, wall_height, wall_depth } = useMazeStore(
-    (state) => state.mazeConfig
-  );
-  const [mazeMap] = useMaze();
+  const [mazeMap, mazeConfig, nextRound] = useMaze();
+  const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
+
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
     let instanceIndex = 0;
@@ -69,7 +69,7 @@ export default function Maze() {
 
     // center the group
     group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
-  }, []);
+  }, [mazeMap]);
 
   const totalSize = maze_col * maze_row;
   return (
@@ -88,6 +88,9 @@ export default function Maze() {
           <meshBasicMaterial color="gold" />
         </mesh>
       </group>
+      <Html>
+        <button onClick={nextRound}>Create Next Round</button>
+      </Html>
     </>
   );
 }
