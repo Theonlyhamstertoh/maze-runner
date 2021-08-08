@@ -1,233 +1,91 @@
 import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallback } from "react";
 import useMazeStore, { mazeConfig } from "./store";
 import * as THREE from "three";
-import randomizeOrder from "./utilities/randomizeOrder";
-import { useFrame } from "@react-three/fiber";
+import useMaze from "./mazeLogic/useMaze";
+
 /**
  *
  * Maze Displayer
  *
  */
-
+function giveRandomPosition(length, object) {
+  const randomX = Math.floor(Math.random() * length);
+  const randomZ = Math.floor(Math.random() * length);
+  object.current.position.set(randomX, 0, randomZ);
+}
 const tempObject = new THREE.Object3D();
 export default function Maze() {
   // related to maze dimensions
   const group = useRef();
   const ref = useRef();
+  const playerRef = useRef();
+  const goalRef = useRef();
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
   const stack = useCallback(() => create_passage(), []);
+  const [mazeMap] = useMaze();
   useLayoutEffect(() => {
-    const nodes = stack();
-    if (nodes.length === 0) return;
-    let i = 0;
-    console.log(nodes);
+    if (mazeMap.length === 0) return;
+    let instanceIndex = 0;
+
+    // there is probably a better way to do this.
+    giveRandomPosition(mazeMap.length, playerRef);
+    giveRandomPosition(mazeMap.length, goalRef);
+
+    function addToInstanceMesh() {
+      tempObject.updateMatrix();
+      ref.current.setMatrixAt(instanceIndex, tempObject.matrix);
+      instanceIndex++;
+    }
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
-        const cell = nodes[x][z];
-        // problem is that all of them are sharing the same index, which means it is overwritten.
+        const cell = mazeMap[x][z];
+        // iterate through each direction to create wall
         if (cell.N) {
-          tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
           tempObject.rotation.y = Math.PI / 2;
-          tempObject.updateMatrix();
-          ref.current.setMatrixAt(i, tempObject.matrix);
-
-          i++;
+          tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
+          addToInstanceMesh();
         }
         if (cell.E) {
           tempObject.rotation.y = 0;
           tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-          tempObject.updateMatrix();
-          ref.current.setMatrixAt(i, tempObject.matrix);
-
-          i++;
+          addToInstanceMesh();
         }
         if (cell.S) {
           tempObject.rotation.y = Math.PI / 2;
           tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
-          tempObject.updateMatrix();
-          ref.current.setMatrixAt(i, tempObject.matrix);
-
-          i++;
+          addToInstanceMesh();
         }
         if (cell.W) {
           tempObject.rotation.y = 0;
           tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-
-          tempObject.updateMatrix();
-          ref.current.setMatrixAt(i, tempObject.matrix);
-          i++;
+          addToInstanceMesh();
         }
       }
     }
 
     ref.current.instanceMatrix.needsUpdate = true;
-    // ref.current.instanceColor.needsUpdate = true;
 
     // center the group
     group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
-  }, [stack]);
+  }, []);
 
   const totalSize = maze_col * maze_row;
   return (
-    <group ref={group}>
-      <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
-        <boxBufferGeometry args={[wall_width, wall_height, wall_depth]} />
-        {/* <boxBufferGeometry args={[0.52, cube_size * 10, 1.52]} /> */}
-        <meshNormalMaterial />
-      </instancedMesh>
-    </group>
+    <>
+      <group ref={group}>
+        <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
+          <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
+          <meshNormalMaterial />
+        </instancedMesh>
+        <mesh ref={goalRef}>
+          <boxBufferGeometry args={[0.5, 0.5, 0.5]} />
+          <meshBasicMaterial color="blue" />
+        </mesh>
+        <mesh ref={playerRef}>
+          <boxBufferGeometry args={[0.5, 0.5, 0.5]} />
+          <meshBasicMaterial color="blue" />
+        </mesh>
+      </group>
+    </>
   );
-}
-
-/**
- *
- * Maze Generator
- *
- */
-
-function useGenerateMazeCoords() {}
-
-const convertToXDirection = { E: 1, W: -1, N: 0, S: 0 };
-const convertToZDirection = { E: 0, W: 0, N: 1, S: -1 };
-const flipToOppositeDirection = { E: "W", S: "N", N: "S", W: "E" };
-const all_directions = ["E", "W", "S", "N"];
-function create_passage() {
-  const { maze_col, maze_row, wall_width, wall_depth } = mazeConfig;
-  // initialize starting maze point
-  const stack = [];
-  const visited = [];
-  // grid that will be filled with all the valid points to go. Basically creates a zone to prevent generator from going off to infinity.
-  const grid = [];
-
-  // fills the array with arrays to make it multi-dimensional (to think of it, think of a table. The x becomes the columns and the z becomes the rows)
-  // ex. [ [ {...code}, {...code} ] ] => array[0][1]
-  for (let x = 0; x < maze_col; x++) {
-    // initialize this index as a array
-    grid[x] = [];
-    for (let z = 0; z < maze_row; z++) {
-      // create a object at this index position inside array of an array.
-      // ex. [ [ {...code}, {...code} ] ]
-      grid[x][z] = {
-        x: x * wall_width,
-        y: 0,
-        z: z * wall_depth,
-        visited: false,
-        direction: null,
-        N: true,
-        E: true,
-        S: true,
-        W: true,
-      };
-    }
-  }
-
-  // push initial starting point. In future, this can be a random point so the starting position is unique.
-  stack.push(grid[0][0]);
-
-  // The implementation of the maze that generates the maze coordinates.
-  while (stack.length !== 0) {
-    // get the newest item (or the last item in array) pushed and its value
-    const currentPoint = stack[stack.length - 1];
-    const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
-
-    // check to make sure there are possible directions to move
-    if (possibleDirections === null) {
-      // if we hit a dead-end, go back to the previous position
-      stack.pop();
-    } else {
-      // return the new point the generator will move towards
-      const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
-      breakWalls(currentPoint, moveToGridPoint);
-      stack.length < 10 && removeDuplicateWalls(currentPoint, grid, moveToGridPoint);
-      // push the current position onto stack
-      stack.push(moveToGridPoint);
-    }
-
-    // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
-    currentPoint.visited = true;
-  }
-  return grid;
-}
-
-function breakWalls(currentPoint, moveToGridPoint) {
-  // ex. if "E", return "W"
-  const oppositeDirection = flipToOppositeDirection[currentPoint.direction];
-
-  // set the walls in the direction to false
-  currentPoint[currentPoint.direction] = false;
-  moveToGridPoint[oppositeDirection] = false;
-}
-
-function removeDuplicateWalls(currentPoint, grid, moveToGridPoint) {
-  // ex. cardinals === [true, true, false, true] (the order below matter)
-  const wallBooleans = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
-  wallBooleans.forEach((haveWall, i) => {
-    if (haveWall) {
-      // ex. true => "N" based on the current index
-      const direction = all_directions[i];
-      // get the following point
-      const neighborPoint = getNewPointsWithinRange(
-        grid,
-        direction,
-        currentPoint.x,
-        currentPoint.z
-      );
-
-      // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
-      // reverse to check if there are walls
-      const oppositeDirection = flipToOppositeDirection[direction];
-      if (neighborPoint && neighborPoint[oppositeDirection]) currentPoint[direction] = false;
-    }
-  });
-}
-
-function getNewPointsWithinRange(grid, cardinal, x, z) {
-  const newXPoint = x + convertToXDirection[cardinal];
-  const newZPoint = z + convertToZDirection[cardinal];
-
-  // first check if x is in valid range
-  if (grid.length - 1 >= newXPoint && 0 <= newXPoint) {
-    // We also check if z is in valid range.
-    if (grid.length - 1 >= newZPoint && 0 <= newZPoint) {
-      const newPoint = grid[newXPoint][newZPoint];
-      return newPoint;
-    }
-  }
-  return null;
-}
-function carve_passage_from(grid, possibleDirections, currentPoint) {
-  // pick a random index
-  const randomIndex = Math.floor(Math.random() * possibleDirections.length);
-  // select the random direction
-  const chosenDirection = possibleDirections[randomIndex];
-  const moveToGridPoint = grid[chosenDirection.x][chosenDirection.z];
-  currentPoint.direction = chosenDirection.direction;
-  return moveToGridPoint;
-}
-
-// this function will find all possible directions the current generator can move. It will return them as a array.
-function findDirectionsToMove(x, z, grid) {
-  // randomly chose a direction to go from
-  const cardinalDirections = randomizeOrder([...all_directions]);
-  const possibleDirection = [];
-  // this will generate possible directions
-  cardinalDirections.forEach((cardinal) => {
-    // moveToGridPoint represent the point we will be moving to next. In another word, the new position
-    const possibleNewPosition = getNewPointsWithinRange(grid, cardinal, x, z);
-    // fromGridPoint is the point we are currently at.
-
-    // check for visited points
-    if (possibleNewPosition && possibleNewPosition.visited === false) {
-      // once we are here, it means we have found a viable path and a unvisited point.
-      // push any potential paths to the array for access below
-      possibleDirection.push({
-        x: possibleNewPosition.x,
-        z: possibleNewPosition.z,
-        direction: cardinal,
-      });
-    }
-  });
-
-  // return null if no directions, else return directions
-  return possibleDirection.length === 0 ? null : possibleDirection;
 }
