@@ -6,3 +6,19 @@ body,
   width: 100vw;
   height: 100vh;
 }
+
+.rowTop {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  bottom: 200px;
+}
+button {
+  outline: none;
+  background-color: #222;
+  border-radius: 13px;
+  color: white;
+  width: 150px;
+  border: none;
+  padding: 8px;
+}

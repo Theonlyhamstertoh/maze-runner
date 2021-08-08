@@ -22,7 +22,7 @@ export default function Maze() {
   const playerRef = useRef();
   const goalRef = useRef();
 
-  const [mazeMap, mazeConfig, nextRound] = useMaze();
+  const [mazeMap, mazeConfig, nextRound, toPrevRound] = useMaze();
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
 
   useLayoutEffect(() => {
@@ -88,8 +88,9 @@ export default function Maze() {
           <meshBasicMaterial color="gold" />
         </mesh>
       </group>
-      <Html>
-        <button onClick={nextRound}>Create Next Round</button>
+      <Html center className="rowTop">
+        <button onClick={toPrevRound}>Decrement</button>
+        <button onClick={nextRound}>Increment</button>
       </Html>
     </>
   );
