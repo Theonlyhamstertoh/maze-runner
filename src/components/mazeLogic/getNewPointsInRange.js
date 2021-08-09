@@ -1,4 +1,4 @@
-import { convertToXDirection, convertToZDirection } from "./mazeLogic/useMaze";
+import { convertToXDirection, convertToZDirection } from "./useMazeGame";
 
 export default function getNewPointsInRange(grid, cardinal, x, z) {
   const newXPoint = x + convertToXDirection[cardinal];

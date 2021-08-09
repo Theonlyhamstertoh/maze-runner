@@ -1,4 +1,4 @@
-import { flipToOppositeDirection } from "./useMaze";
+import { flipToOppositeDirection } from "./useMazeGame";
 export default function breakWalls(currentPoint, moveToGridPoint) {
   // ex. if "E", return "W"
   const oppositeDirection = flipToOppositeDirection[currentPoint.direction];

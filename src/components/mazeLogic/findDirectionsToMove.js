@@ -1,6 +1,6 @@
-import { all_directions } from "./useMaze";
+import { all_directions } from "./useMazeGame";
 import randomizeOrder from "./randomizeOrder";
-import getNewPointsInRange from "../getNewPointsInRange";
+import getNewPointsInRange from "./getNewPointsInRange";
 
 // this function will find all possible directions the current generator can move. It will return them as a array.
 export default function findDirectionsToMove(x, z, grid) {

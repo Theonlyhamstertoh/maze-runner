@@ -1,54 +1,28 @@
-import React, { useRef, useLayoutEffect, useMemo, useState, useEffect, useCallback } from "react";
-import useMazeStore from "./store";
+import React, { useRef, useLayoutEffect } from "react";
 import * as THREE from "three";
-import useMaze from "./mazeLogic/useMaze";
-import { Html } from "@react-three/drei";
 
 /**
  *
- *
+ * Display the maze with instanced walls
  *
  */
-function giveRandomPosition(length, object) {
-  const randomX = Math.floor(Math.random() * length);
-  const randomZ = Math.floor(Math.random() * length);
-  object.current.position.set(randomX, 0, randomZ);
-}
-const tempObject = new THREE.Object3D();
-export default function Maze() {
-  // related to maze dimensions
-  const group = useRef();
-  const ref = useRef();
-  const playerRef = useRef();
-  const goalRef = useRef();
 
-  const [mazeMap, mazeConfig, nextRound, toPrevRound] = useMaze();
+const tempObject = new THREE.Object3D();
+export default function Maze({ mazeMap, mazeConfig }) {
+  const ref = useRef();
+
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
 
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
     let instanceIndex = 0;
 
-    // there is probably a better way to do this.
-    giveRandomPosition(mazeMap.length, playerRef);
-    giveRandomPosition(mazeMap.length, goalRef);
-
-    while (true) {
-      const { x: pX, z: pZ } = playerRef.current.position;
-      const { x: gX, z: gZ } = goalRef.current.position;
-
-      if (pX === gX && pZ === gZ) {
-        giveRandomPosition(mazeMap.length, goalRef);
-        console.log(pX, gX, pZ, gZ);
-      } else {
-        break;
-      }
-    }
     function addToInstanceMesh() {
       tempObject.updateMatrix();
       ref.current.setMatrixAt(instanceIndex, tempObject.matrix);
       instanceIndex++;
     }
+
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
         const cell = mazeMap[x][z];
@@ -77,32 +51,13 @@ export default function Maze() {
     }
 
     ref.current.instanceMatrix.needsUpdate = true;
-
-    // center the group
-    group.current.position.set(-Math.floor(maze_col / 2), 0, -Math.floor(maze_row / 2));
   }, [mazeMap]);
 
   const totalSize = maze_col * maze_row;
   return (
-    <>
-      <group ref={group}>
-        <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
-          <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
-          <meshNormalMaterial />
-        </instancedMesh>
-        <mesh ref={goalRef}>
-          <boxBufferGeometry args={[0.5, 0.5, 0.5]} />
-          <meshBasicMaterial color="blue" />
-        </mesh>
-        <mesh ref={playerRef}>
-          <boxBufferGeometry args={[0.5, 0.5, 0.5]} />
-          <meshBasicMaterial color="gold" />
-        </mesh>
-      </group>
-      <Html center className="rowTop">
-        <button onClick={toPrevRound}>Decrement</button>
-        <button onClick={nextRound}>Increment</button>
-      </Html>
-    </>
+    <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
+      <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
+      <meshNormalMaterial />
+    </instancedMesh>
   );
 }

@@ -1,5 +1,5 @@
-import getNewPointsInRange from "../getNewPointsInRange";
-import { all_directions, flipToOppositeDirection } from "./useMaze";
+import getNewPointsInRange from "./getNewPointsInRange";
+import { all_directions, flipToOppositeDirection } from "./useMazeGame";
 
 export default function removeDuplicateWalls(currentPoint, grid) {
   // ex. cardinals === [true, true, false, true] (the order below matter)
