@@ -4,11 +4,11 @@ The goal of this project is to create a infinite maze game where you, the player
 
 ## Core Steps to Complete 
 - [x] Generate a maze 
-- [] Maze walls should have a glassy appearance
-- [] Maze should increase in size as player progress
-- [] A flag should be at the goal of the maze
-- [] A hole should also be at the goal of the maze 
-- [] Player after completing first maze should drop down to next maze through hole
+[] Maze walls should have a glassy appearance
+[] Maze should increase in size as player progress
+[] A flag should be at the goal of the maze
+[] A hole should also be at the goal of the maze 
+[] Player after completing first maze should drop down to next maze through hole
 - [] Maze should rotate on certain level to add difficulty
 - [] Add physics to the walls
 - [] Add physics to the player
