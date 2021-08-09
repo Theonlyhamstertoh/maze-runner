@@ -33,6 +33,17 @@ export default function Maze() {
     giveRandomPosition(mazeMap.length, playerRef);
     giveRandomPosition(mazeMap.length, goalRef);
 
+    while (true) {
+      const { x: pX, z: pZ } = playerRef.current.position;
+      const { x: gX, z: gZ } = goalRef.current.position;
+
+      if (pX === gX && pZ === gZ) {
+        giveRandomPosition(mazeMap.length, goalRef);
+        console.log(pX, gX, pZ, gZ);
+      } else {
+        break;
+      }
+    }
     function addToInstanceMesh() {
       tempObject.updateMatrix();
       ref.current.setMatrixAt(instanceIndex, tempObject.matrix);

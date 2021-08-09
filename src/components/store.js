@@ -17,8 +17,8 @@ const useMazeStore = create((set) => ({
     set((state) => ({
       mazeConfig: {
         ...state.mazeConfig,
-        maze_col: col >= 3 ? col : INITIAL.maze_col,
-        maze_row: row >= 3 ? row : INITIAL.maze_row,
+        maze_col: col >= INITIAL.maze_col ? col : INITIAL.maze_col,
+        maze_row: row >= INITIAL.maze_row ? row : INITIAL.maze_row,
       },
     }));
   },
