@@ -39,3 +39,9 @@ The goal of this project is to create a infinite maze game where you, the player
 - [ ] Sync audio to the rotation speed of maze.
 - [ ] Maze wall should change in color.
 - [ ] Add wind in the game.
+
+
+| demo                                              | demo |
+| ------------------------------------------------- | ---- |
+| <input type="checkbox" disabled checked /> works  |      |
+| <input type="checkbox" disabled /> works here too |      |
