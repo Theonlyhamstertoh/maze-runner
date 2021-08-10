@@ -41,8 +41,6 @@ function App() {
 }
 
 function Scene() {
-  const light = useRef();
-  useHelper(light, THREE.DirectionalLightHelper);
   const { mazeMap, mazeConfig, nextRound, toPrevRound, level } = useMazeGame();
 
   const getRandomPosition = useCallback(() => {
@@ -62,9 +60,6 @@ function Scene() {
     return [playerPosition, goalPosition];
   }, [mazeConfig]);
 
-  const { color } = useControls({
-    lightColor: "#5f0850",
-  });
   return (
     <>
       <group>
