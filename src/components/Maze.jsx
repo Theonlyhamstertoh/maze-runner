@@ -1,4 +1,5 @@
-import React, { useRef, useLayoutEffect } from "react";
+import { useControls } from "leva";
+import React, { useRef, useLayoutEffect, useMemo } from "react";
 import * as THREE from "three";
 
 /**
@@ -8,10 +9,15 @@ import * as THREE from "three";
  */
 
 const tempObject = new THREE.Object3D();
-export default function Maze({ mazeMap, mazeConfig }) {
+export default function Maze({ mazeMap, mazeConfig, level }) {
   const ref = useRef();
 
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
+
+  const wallColor = useMemo(() => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 80%, 30% )`;
+  }, [level]);
 
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
@@ -57,7 +63,7 @@ export default function Maze({ mazeMap, mazeConfig }) {
   return (
     <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
       <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
-      <meshNormalMaterial />
+      <meshStandardMaterial metalness={0.2} roughness={0.7} envMapIntensity={9} color={wallColor} />
     </instancedMesh>
   );
 }

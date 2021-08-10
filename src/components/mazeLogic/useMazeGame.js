@@ -9,16 +9,18 @@ export const flipToOppositeDirection = { E: "W", S: "N", N: "S", W: "E" };
 export const all_directions = ["E", "W", "S", "N"];
 
 export default function useMazeGame() {
-  const [mazeConfig, setMazeSize, setNextLevel, decrementLevel] = useMazeStore(
-    (state) => [
-      state.mazeConfig,
-      state.setMazeSize,
-      state.nextLevel,
-      state.decrementLevel,
-      state.setMazeGenerated,
-    ],
-    shallow
-  );
+  const [mazeConfig, setMazeSize, setNextLevel, decrementLevel, setMazeGenerated, level] =
+    useMazeStore(
+      (state) => [
+        state.mazeConfig,
+        state.setMazeSize,
+        state.nextLevel,
+        state.decrementLevel,
+        state.setMazeGenerated,
+        state.level,
+      ],
+      shallow
+    );
 
   const nextRound = () => {
     setMazeSize(mazeConfig.maze_col + 2, mazeConfig.maze_row + 2);
@@ -31,5 +33,5 @@ export default function useMazeGame() {
   };
   const mazeMap = useMemo(() => create_maze(mazeConfig), [mazeConfig]);
 
-  return [mazeMap, mazeConfig, nextRound, toPrevRound];
+  return { mazeMap, mazeConfig, nextRound, toPrevRound, level };
 }

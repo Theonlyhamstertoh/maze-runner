@@ -1,11 +1,9 @@
-// import { UseStore } from "zustand";
-
 import create from "zustand";
 
 const INITIAL = {
   maze_col: 3,
   maze_row: 3,
-  wall_width: 0.25,
+  wall_width: 0.3,
   wall_height: 1,
   wall_depth: 1,
 };
@@ -23,7 +21,7 @@ const useMazeStore = create((set) => ({
     }));
   },
   nextLevel: () => set((state) => ({ level: state.level + 1 })),
-  decrementLevel: () => set((state) => ({ level: state.level - 1 })),
+  decrementLevel: () => set((state) => ({ level: state.level > 0 ? state.level - 1 : 0 })),
   setMazedGenerated: (boolean) => set((state) => ({ mazedGenerated: boolean })),
 }));
 

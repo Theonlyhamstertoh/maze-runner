@@ -24,7 +24,7 @@ The goal of this project is to create a infinite maze game where you, the player
 - [ ] User should input their name at start
 - [ ] User name tag should be visible above player object
 - [ ] Different Maze Design on certain levels. For example, skinny row, long column.
-- [] Show user path trail with line (and overlapping line should get darker)
+- [ ] Show user path trail with line (and overlapping line should get darker)
 
 
 ## Ideas
@@ -40,8 +40,3 @@ The goal of this project is to create a infinite maze game where you, the player
 - [ ] Maze wall should change in color.
 - [ ] Add wind in the game.
 
-
-| demo                                              | demo |
-| ------------------------------------------------- | ---- |
-| <input type="checkbox" disabled checked /> works  |      |
-| <input type="checkbox" disabled /> works here too |      |

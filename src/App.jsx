@@ -1,6 +1,14 @@
-import React, { useState, useEffect, useMemo, useLayoutEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+  Suspense,
+} from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Stats, MapControls, Html } from "@react-three/drei";
+import { Stats, MapControls, Html, Environment, useHelper } from "@react-three/drei";
 import * as THREE from "three";
 
 // Maze Components
@@ -8,6 +16,7 @@ import Maze from "./components/Maze";
 import useMazeGame from "./components/mazeLogic/useMazeGame";
 import Player from "./components/Player";
 import Goal from "./components/Goal";
+import { useControls } from "leva";
 
 function App() {
   return (
@@ -19,9 +28,11 @@ function App() {
       <directionalLight position={[0, 10, 10]} intensity={0.5} />
       <Stats />
       <axesHelper args={[10]} />
-
       <Scene />
       <MapControls />
+      <Suspense fallback={null}>
+        <Environment files="snowy_hillside_1k.hdr" />
+      </Suspense>
 
       {/* <AnimatedMovingCube /> */}
       {/* <FlyControls dragToLook rollSpeed={0.5} /> */}
@@ -30,7 +41,9 @@ function App() {
 }
 
 function Scene() {
-  const [mazeMap, mazeConfig, nextRound, toPrevRound] = useMazeGame();
+  const light = useRef();
+  useHelper(light, THREE.DirectionalLightHelper);
+  const { mazeMap, mazeConfig, nextRound, toPrevRound, level } = useMazeGame();
 
   const getRandomPosition = useCallback(() => {
     const x = Math.floor(Math.random() * mazeConfig.maze_col);
@@ -49,18 +62,24 @@ function Scene() {
     return [playerPosition, goalPosition];
   }, [mazeConfig]);
 
+  const { color } = useControls({
+    lightColor: "#5f0850",
+  });
   return (
-    <group>
-      <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} />
-      <Player position={playerPosition} />
-      <Goal position={goalPosition} />
-      <Html center className="rowTop">
-        <button onClick={toPrevRound}>Decrement</button>
-        <button onClick={nextRound}>Increment</button>
-      </Html>
-    </group>
+    <>
+      <group>
+        <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
+        <Player position={playerPosition} />
+        <Goal position={goalPosition} />
+        <Html center className="rowTop">
+          <button onClick={toPrevRound}>Decrement</button>
+          <button onClick={nextRound}>Increment</button>
+        </Html>
+      </group>
+    </>
   );
 }
+
 function Floor() {
   return (
     // if we rotate around y, it doesn't become horizontal. So rotate around x will. Since y is upwards. And x is horizontal
