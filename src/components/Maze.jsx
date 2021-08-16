@@ -16,9 +16,21 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
 
   const wallColor = useMemo(() => {
     const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 80%, 30% )`;
+    return `hsl(${0 + level * 4}, 80%, 30%)`;
   }, [level]);
-
+  const totalWallCount = useMemo(() => {
+    let count = 0;
+    for (let x = 0; x < maze_col; x++) {
+      for (let z = 0; z < maze_row; z++) {
+        const cell = mazeMap[x][z];
+        if (cell.N) count++;
+        if (cell.E) count++;
+        if (cell.S) count++;
+        if (cell.W) count++;
+      }
+    }
+    return count;
+  }, [level]);
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
     let instanceIndex = 0;
@@ -56,12 +68,11 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
       }
     }
 
+    console.log(instanceIndex, maze_col);
     ref.current.instanceMatrix.needsUpdate = true;
-  }, [mazeMap]);
-
-  const totalSize = maze_col * maze_row;
+  }, [level]);
   return (
-    <instancedMesh ref={ref} args={[null, null, totalSize * 10]}>
+    <instancedMesh ref={ref} args={[null, null, totalWallCount * 3]}>
       <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
       <meshStandardMaterial metalness={0.2} roughness={0.7} envMapIntensity={9} color={wallColor} />
     </instancedMesh>

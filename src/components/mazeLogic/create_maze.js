@@ -44,7 +44,13 @@ export default function create_maze({ maze_col, maze_row }) {
   while (stack.length !== 0) {
     // get the newest item (or the last item in array) pushed and its value
     const currentPoint = stack[stack.length - 1];
-    const possibleDirections = findDirectionsToMove(currentPoint.x, currentPoint.z, grid);
+    const possibleDirections = findDirectionsToMove(
+      currentPoint.x,
+      currentPoint.z,
+      grid,
+      maze_col,
+      maze_row
+    );
 
     // check to make sure there are possible directions to move
     if (possibleDirections === null) {
@@ -62,5 +68,6 @@ export default function create_maze({ maze_col, maze_row }) {
     // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     currentPoint.visited = true;
   }
+  console.log(grid);
   return grid;
 }

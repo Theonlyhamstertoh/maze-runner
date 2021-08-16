@@ -3,14 +3,14 @@ import randomizeOrder from "./randomizeOrder";
 import getNewPointsInRange from "./getNewPointsInRange";
 
 // this function will find all possible directions the current generator can move. It will return them as a array.
-export default function findDirectionsToMove(x, z, grid) {
+export default function findDirectionsToMove(x, z, grid, maze_col, maze_row) {
   // randomly chose a direction to go from
   const cardinalDirections = randomizeOrder([...all_directions]);
   const possibleDirection = [];
   // this will generate possible directions
   cardinalDirections.forEach((cardinal) => {
     // moveToGridPoint represent the point we will be moving to next. In another word, the new position
-    const possibleNewPosition = getNewPointsInRange(grid, cardinal, x, z);
+    const possibleNewPosition = getNewPointsInRange(grid, cardinal, x, z, maze_col, maze_row);
     // fromGridPoint is the point we are currently at.
 
     // check for visited points

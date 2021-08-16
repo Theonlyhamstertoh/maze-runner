@@ -31,7 +31,8 @@ export default function useMazeGame() {
     setMazeSize(mazeConfig.maze_col - 2, mazeConfig.maze_row - 2);
     decrementLevel();
   };
-  const mazeMap = useMemo(() => create_maze(mazeConfig), [mazeConfig]);
+
+  const mazeMap = useMemo(() => create_maze(mazeConfig), [level]);
 
   return { mazeMap, mazeConfig, nextRound, toPrevRound, level };
 }
