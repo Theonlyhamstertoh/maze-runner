@@ -1,3 +1,4 @@
+import { useBox } from "@react-three/cannon";
 import { useControls } from "leva";
 import React, { useRef, useLayoutEffect, useMemo } from "react";
 import * as THREE from "three";
@@ -10,8 +11,11 @@ import * as THREE from "three";
 
 const tempObject = new THREE.Object3D();
 export default function Maze({ mazeMap, mazeConfig, level }) {
+  // const [ref, api] = useBox(() => ({
+  //   mass: 0,
+  //   args: [wall_width, wall_height, wall_depth + wall_width],
+  // }));
   const ref = useRef();
-
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
 
   const wallColor = useMemo(() => {
@@ -29,8 +33,10 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
         if (cell.W) count++;
       }
     }
+    console.log("COUNt", count);
     return count;
   }, [level]);
+
   useLayoutEffect(() => {
     if (mazeMap.length === 0) return;
     let instanceIndex = 0;
@@ -70,9 +76,39 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
 
     console.log(instanceIndex, maze_col);
     ref.current.instanceMatrix.needsUpdate = true;
+
+    // for (let x = 0; x < maze_col; x++) {
+    //   for (let z = 0; z < maze_row; z++) {
+    //     const cell = mazeMap[x][z];
+    //     // iterate through each direction to create wall
+    //     if (cell.N) {
+    //       api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
+    //       api.at(instanceIndex).position.set(cell.x, cell.y, cell.z + 0.5);
+    //       // console.log("N", instanceIndex, api.at(instanceIndex));
+    //       instanceIndex++;
+    //     }
+    //     if (cell.E) {
+    //       api.at(instanceIndex).position.set(cell.x + 0.5, cell.y, cell.z);
+    //       // console.log("E", instanceIndex, api.at(instanceIndex));
+    //       instanceIndex++;
+    //     }
+    //     if (cell.S) {
+    //       api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
+    //       api.at(instanceIndex).position.set(cell.x, cell.y, cell.z - 0.5);
+    //       // console.log("S", instanceIndex, api.at(instanceIndex));
+    //       instanceIndex++;
+    //     }
+    //     if (cell.W) {
+    //       api.at(instanceIndex).position.set(cell.x - 0.5, cell.y, cell.z);
+    //       // console.log("W", instanceIndex, api.at(instanceIndex));
+    //       instanceIndex++;
+    //     }
+    //   }
+    // }
+    console.log(instanceIndex);
   }, [level]);
   return (
-    <instancedMesh ref={ref} args={[null, null, totalWallCount * 3]}>
+    <instancedMesh ref={ref} args={[null, null, totalWallCount]}>
       <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
       <meshStandardMaterial metalness={0.2} roughness={0.7} envMapIntensity={9} color={wallColor} />
     </instancedMesh>

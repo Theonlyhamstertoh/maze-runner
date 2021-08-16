@@ -60,7 +60,7 @@ export default function create_maze({ maze_col, maze_row }) {
       // return the new point the generator will move towards
       const moveToGridPoint = carve_passage_from(grid, possibleDirections, currentPoint);
       breakWalls(currentPoint, moveToGridPoint);
-      removeDuplicateWalls(currentPoint, grid, moveToGridPoint);
+      removeDuplicateWalls(currentPoint, grid, maze_col, maze_row);
       // push the current position onto stack
       stack.push(moveToGridPoint);
     }

@@ -2,7 +2,7 @@ import create from "zustand";
 
 const INITIAL = {
   maze_col: 3,
-  maze_row: 4,
+  maze_row: 3,
   wall_width: 0.3,
   wall_height: 1,
   wall_depth: 1,

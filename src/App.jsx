@@ -17,6 +17,7 @@ import useMazeGame from "./components/mazeLogic/useMazeGame";
 import Player from "./components/Player";
 import Goal from "./components/Goal";
 import { useControls } from "leva";
+import { Physics } from "@react-three/cannon";
 
 function App() {
   return (
@@ -62,15 +63,15 @@ function Scene() {
 
   return (
     <>
-      <group>
-        <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
-        <Player position={playerPosition} />
-        <Goal position={goalPosition} />
-        <Html center className="rowTop">
-          <button onClick={toPrevRound}>Decrement</button>
-          <button onClick={nextRound}>Increment</button>
-        </Html>
-      </group>
+      {/* <Physics> */}
+      <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
+      {/* </Physics> */}
+      <Player position={playerPosition} />
+      <Goal position={goalPosition} />
+      <Html center className="rowTop">
+        <button onClick={toPrevRound}>Decrement</button>
+        <button onClick={nextRound}>Increment</button>
+      </Html>
     </>
   );
 }

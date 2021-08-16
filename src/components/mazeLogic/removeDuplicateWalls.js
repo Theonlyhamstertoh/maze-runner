@@ -1,7 +1,7 @@
 import getNewPointsInRange from "./getNewPointsInRange";
 import { all_directions, flipToOppositeDirection } from "./useMazeGame";
 
-export default function removeDuplicateWalls(currentPoint, grid) {
+export default function removeDuplicateWalls(currentPoint, grid, maze_col, maze_row) {
   // ex. cardinals === [true, true, false, true] (the order below matter)
   const wallBooleans = [currentPoint.E, currentPoint.W, currentPoint.S, currentPoint.N];
   wallBooleans.forEach((haveWall, i) => {
@@ -9,7 +9,14 @@ export default function removeDuplicateWalls(currentPoint, grid) {
       // ex. true => "N" based on the current index
       const direction = all_directions[i];
       // get the following point
-      const neighborPoint = getNewPointsInRange(grid, direction, currentPoint.x, currentPoint.z);
+      const neighborPoint = getNewPointsInRange(
+        grid,
+        direction,
+        currentPoint.x,
+        currentPoint.z,
+        maze_col,
+        maze_row
+      );
 
       // If the following point has a existing wall, set currentPoint direction as false to not generate duplicate walls
       // reverse to check if there are walls
