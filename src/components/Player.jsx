@@ -54,7 +54,7 @@ export default function Player({ position }) {
 
     direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(SPEED);
     api.velocity.set(direction.x, direction.y, direction.z);
-    console.log(direction);
+    // console.log(direction);
   });
   return (
     <mesh ref={ref} position={[position.x, position.y, position.z]}>
