@@ -17,7 +17,7 @@ import useMazeGame from "./components/mazeLogic/useMazeGame";
 import Player from "./components/Player";
 import Goal from "./components/Goal";
 import { useControls } from "leva";
-import { Physics } from "@react-three/cannon";
+import { Debug, Physics, useBox, usePlane } from "@react-three/cannon";
 
 function App() {
   return (
@@ -65,8 +65,11 @@ function Scene() {
     <>
       <Physics>
         <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
+        <Debug>
+          <Player position={playerPosition} />
+        </Debug>
+        <Floor />
       </Physics>
-      <Player position={playerPosition} />
       <Goal position={goalPosition} />
       <Html center className="rowTop">
         <button onClick={toPrevRound}>Decrement</button>
@@ -77,10 +80,15 @@ function Scene() {
 }
 
 function Floor() {
+  const [ref, api] = useBox(() => ({
+    mass: 0,
+    args: [8, 0.1, 8],
+    position: [0, -0.5, 0],
+  }));
   return (
     // if we rotate around y, it doesn't become horizontal. So rotate around x will. Since y is upwards. And x is horizontal
-    <mesh rotation={[-Math.PI / 2, 0, 0]}>
-      <planeBufferGeometry args={[75, 75]} double />
+    <mesh ref={ref}>
+      <boxBufferGeometry args={[8, 0.1, 8]} double />
       <meshBasicMaterial color="#26a5b6" side={THREE.DoubleSide} />
     </mesh>
   );
