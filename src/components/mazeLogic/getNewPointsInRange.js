@@ -4,7 +4,6 @@ export default function getNewPointsInRange(grid, cardinal, x, z, maze_col, maze
   const newXPoint = x + convertToXDirection[cardinal];
   const newZPoint = z + convertToZDirection[cardinal];
 
-  console.log(grid.length, maze_col, maze_row);
   // first check if x is in valid range
   if (maze_col - 1 >= newXPoint && 0 <= newXPoint) {
     // We also check if z is in valid range.

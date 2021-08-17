@@ -63,9 +63,9 @@ function Scene() {
 
   return (
     <>
-      {/* <Physics> */}
-      <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
-      {/* </Physics> */}
+      <Physics>
+        <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} />
+      </Physics>
       <Player position={playerPosition} />
       <Goal position={goalPosition} />
       <Html center className="rowTop">

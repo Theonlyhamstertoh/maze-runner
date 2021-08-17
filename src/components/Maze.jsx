@@ -9,14 +9,12 @@ import * as THREE from "three";
  *
  */
 
-const tempObject = new THREE.Object3D();
 export default function Maze({ mazeMap, mazeConfig, level }) {
-  // const [ref, api] = useBox(() => ({
-  //   mass: 0,
-  //   args: [wall_width, wall_height, wall_depth + wall_width],
-  // }));
-  const ref = useRef();
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
+  const [ref, api] = useBox(() => ({
+    mass: 0,
+    args: [wall_width, wall_height, wall_depth + wall_width],
+  }));
 
   const wallColor = useMemo(() => {
     const hue = Math.floor(Math.random() * 360);
@@ -33,7 +31,6 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
         if (cell.W) count++;
       }
     }
-    console.log("COUNt", count);
     return count;
   }, [level]);
 
@@ -41,71 +38,31 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
     if (mazeMap.length === 0) return;
     let instanceIndex = 0;
 
-    function addToInstanceMesh() {
-      tempObject.updateMatrix();
-      ref.current.setMatrixAt(instanceIndex, tempObject.matrix);
-      instanceIndex++;
-    }
-
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
         const cell = mazeMap[x][z];
+        console.log("N", instanceIndex, api);
         // iterate through each direction to create wall
         if (cell.N) {
-          tempObject.rotation.y = Math.PI / 2;
-          tempObject.position.set(cell.x, cell.y, cell.z + 0.5);
-          addToInstanceMesh();
+          api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
+          api.at(instanceIndex).position.set(cell.x, cell.y, cell.z + 0.5);
+          instanceIndex++;
         }
         if (cell.E) {
-          tempObject.rotation.y = 0;
-          tempObject.position.set(cell.x + 0.5, cell.y, cell.z);
-          addToInstanceMesh();
+          api.at(instanceIndex).position.set(cell.x + 0.5, cell.y, cell.z);
+          instanceIndex++;
         }
         if (cell.S) {
-          tempObject.rotation.y = Math.PI / 2;
-          tempObject.position.set(cell.x, cell.y, cell.z - 0.5);
-          addToInstanceMesh();
+          api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
+          api.at(instanceIndex).position.set(cell.x, cell.y, cell.z - 0.5);
+          instanceIndex++;
         }
         if (cell.W) {
-          tempObject.rotation.y = 0;
-          tempObject.position.set(cell.x - 0.5, cell.y, cell.z);
-          addToInstanceMesh();
+          api.at(instanceIndex).position.set(cell.x - 0.5, cell.y, cell.z);
+          instanceIndex++;
         }
       }
     }
-
-    console.log(instanceIndex, maze_col);
-    ref.current.instanceMatrix.needsUpdate = true;
-
-    // for (let x = 0; x < maze_col; x++) {
-    //   for (let z = 0; z < maze_row; z++) {
-    //     const cell = mazeMap[x][z];
-    //     // iterate through each direction to create wall
-    //     if (cell.N) {
-    //       api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
-    //       api.at(instanceIndex).position.set(cell.x, cell.y, cell.z + 0.5);
-    //       // console.log("N", instanceIndex, api.at(instanceIndex));
-    //       instanceIndex++;
-    //     }
-    //     if (cell.E) {
-    //       api.at(instanceIndex).position.set(cell.x + 0.5, cell.y, cell.z);
-    //       // console.log("E", instanceIndex, api.at(instanceIndex));
-    //       instanceIndex++;
-    //     }
-    //     if (cell.S) {
-    //       api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
-    //       api.at(instanceIndex).position.set(cell.x, cell.y, cell.z - 0.5);
-    //       // console.log("S", instanceIndex, api.at(instanceIndex));
-    //       instanceIndex++;
-    //     }
-    //     if (cell.W) {
-    //       api.at(instanceIndex).position.set(cell.x - 0.5, cell.y, cell.z);
-    //       // console.log("W", instanceIndex, api.at(instanceIndex));
-    //       instanceIndex++;
-    //     }
-    //   }
-    // }
-    console.log(instanceIndex);
   }, [level]);
   return (
     <instancedMesh ref={ref} args={[null, null, totalWallCount]}>
