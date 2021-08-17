@@ -41,7 +41,6 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
         const cell = mazeMap[x][z];
-        console.log("N", instanceIndex, api);
         // iterate through each direction to create wall
         if (cell.N) {
           api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
