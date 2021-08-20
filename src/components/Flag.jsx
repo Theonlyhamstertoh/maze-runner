@@ -10,7 +10,6 @@ export default function Flag({ position }) {
   const { nodes, materials } = useGLTF(
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/flag/model.gltf"
   );
-  console.log(position);
   return (
     <group position={[position.x, position.y, position.z]} ref={group} dispose={null}>
       <group rotation={[Math.PI / 2, 0, 0]}>

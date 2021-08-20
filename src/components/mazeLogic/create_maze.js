@@ -68,6 +68,5 @@ export default function create_maze({ maze_col, maze_row }) {
     // either way, if directions are defined and not defined, I want to set the previous position as visited so that on the next iteration, it won't move to the same place again.
     currentPoint.visited = true;
   }
-  console.log(grid);
   return grid;
 }

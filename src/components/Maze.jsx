@@ -1,6 +1,6 @@
 import { useBox } from "@react-three/cannon";
 import { useControls } from "leva";
-import React, { useRef, useLayoutEffect, useMemo } from "react";
+import React, { useRef, useLayoutEffect, useMemo, useEffect } from "react";
 import * as THREE from "three";
 
 /**
@@ -20,6 +20,10 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${0 + level * 4}, 80%, 30%)`;
   }, [level]);
+
+  useEffect(() => {
+    console.log(ref);
+  });
   const totalWallCount = useMemo(() => {
     let count = 0;
     for (let x = 0; x < maze_col; x++) {
@@ -41,7 +45,9 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
     for (let x = 0; x < maze_col; x++) {
       for (let z = 0; z < maze_row; z++) {
         const cell = mazeMap[x][z];
+
         // iterate through each direction to create wall
+        // so the problem is this, the instance mesh count is not being changed. Let's force a rerender
         if (cell.N) {
           api.at(instanceIndex).rotation.set(0, Math.PI / 2, 0);
           api.at(instanceIndex).position.set(cell.x, cell.y, cell.z + 0.5);
@@ -66,7 +72,12 @@ export default function Maze({ mazeMap, mazeConfig, level }) {
   return (
     <instancedMesh ref={ref} args={[null, null, totalWallCount]}>
       <boxBufferGeometry args={[wall_width, wall_height, wall_depth + wall_width]} />
-      <meshStandardMaterial metalness={0.2} roughness={0.7} envMapIntensity={9} color={wallColor} />
+      <meshStandardMaterial
+        metalness={0.2}
+        roughness={0.7}
+        envMapIntensity={9}
+        // color={wallColor}
+      />
     </instancedMesh>
   );
 }
