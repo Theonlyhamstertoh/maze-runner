@@ -9,21 +9,13 @@ import * as THREE from "three";
  *
  */
 
-export default function Maze({ mazeMap, mazeConfig, level }) {
+export default function Maze({ mazeMap, mazeConfig, level, wallColor }) {
   const { maze_col, maze_row, wall_width, wall_height, wall_depth } = mazeConfig;
   const [ref, api] = useBox(() => ({
     mass: 0,
     args: [wall_width, wall_height, wall_depth + wall_width],
   }));
 
-  const wallColor = useMemo(() => {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 80%, 30%)`;
-  }, [level]);
-
-  useEffect(() => {
-    console.log(ref);
-  });
   const totalWallCount = useMemo(() => {
     let count = 0;
     for (let x = 0; x < maze_col; x++) {

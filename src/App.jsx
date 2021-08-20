@@ -87,11 +87,16 @@ function Scene() {
         />
         <Player key={generateUUID()} position={playerPosition} />
         <Floor />
+        <Suspense fallback={null}>
+          {/* <Character /> */}
+          <Flag
+            key={generateUUID()}
+            position={goalPosition}
+            wallColor={wallColor}
+            nextRound={nextRound}
+          />
+        </Suspense>
       </Physics>
-      <Suspense fallback={null}>
-        {/* <Character /> */}
-        <Flag position={goalPosition} wallColor={wallColor} />
-      </Suspense>
       <Html center className="rowTop">
         <button onClick={toPrevRound}>Decrement</button>
         <button onClick={nextRound}>Increment</button>
