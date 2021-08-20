@@ -26,6 +26,7 @@ import Player from "./components/Player";
 import Flag from "./components/Flag";
 import { useControls } from "leva";
 import { Debug, Physics, useBox, usePlane } from "@react-three/cannon";
+import { generateUUID } from "three/src/math/MathUtils";
 
 function App() {
   return (
@@ -67,20 +68,29 @@ function Scene() {
       goalPosition = getRandomPosition();
     }
     return [playerPosition, goalPosition];
-  }, [mazeConfig]);
+  }, [level]);
+
+  const wallColor = useMemo(() => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 80%, 30%)`;
+  }, [level]);
 
   return (
     <>
       <Physics>
-        <Maze mazeMap={mazeMap} mazeConfig={mazeConfig} level={level} key={level} />
-        <Debug>
-          <Player position={playerPosition} />
-        </Debug>
+        <Maze
+          mazeMap={mazeMap}
+          mazeConfig={mazeConfig}
+          level={level}
+          key={generateUUID()}
+          wallColor={wallColor}
+        />
+        <Player key={generateUUID()} position={playerPosition} />
         <Floor />
       </Physics>
       <Suspense fallback={null}>
         {/* <Character /> */}
-        <Flag position={goalPosition} />
+        <Flag position={goalPosition} wallColor={wallColor} />
       </Suspense>
       <Html center className="rowTop">
         <button onClick={toPrevRound}>Decrement</button>
@@ -100,7 +110,7 @@ function Floor() {
     // if we rotate around y, it doesn't become horizontal. So rotate around x will. Since y is upwards. And x is horizontal
     <mesh ref={ref}>
       <boxBufferGeometry args={[63, 0.1, 63]} double />
-      <meshBasicMaterial color="#26a5b6" side={THREE.DoubleSide} />
+      <shadowMaterial side={THREE.DoubleSide} />
     </mesh>
   );
 }

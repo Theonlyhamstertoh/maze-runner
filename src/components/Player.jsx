@@ -46,6 +46,7 @@ export default function Player({ position }) {
   const [ref, api] = useSphere(() => ({
     mass: 1,
     args: 0.3,
+    position: [position.x, position.y, position.z],
   }));
   const velocity = useRef([0, 0, 0]);
   useFrame(() => {
@@ -54,16 +55,14 @@ export default function Player({ position }) {
 
     direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(SPEED);
     api.velocity.set(direction.x, direction.y, direction.z);
-    // console.log(direction);
   });
   return (
-    <mesh ref={ref} position={[position.x, position.y, position.z]}>
+    <mesh ref={ref}>
       <sphereBufferGeometry args={[0.3, 16, 16]} />
-      <meshStandardMaterial
+      <meshPhysicalMaterial
         color="green"
-        // thickness={5}
-        // roughness={1}
-        // clearcoat={1}
+        thickness={5}
+        roughness={1}
         // transmission={1}
         // ior={1.25}
         // envMapIntensity={25}
