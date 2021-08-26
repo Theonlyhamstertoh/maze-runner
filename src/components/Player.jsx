@@ -1,8 +1,15 @@
 import { useBox, useSphere } from "@react-three/cannon";
-import { Html, useTexture, useGLTF, useAnimations } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import {
+  Html,
+  useTexture,
+  useGLTF,
+  useAnimations,
+  PerspectiveCamera,
+  useHelper,
+} from "@react-three/drei";
+import { useFrame, useLoader } from "@react-three/fiber";
 import { useControls } from "leva";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import * as THREE from "three";
 const keys = {
   KeyW: "up",
@@ -41,73 +48,42 @@ const speed = new THREE.Vector3();
 const SPEED = 6;
 
 export default function Player({ position }) {
-  const [state, setState] = useState(0);
+  const [normalMap] = useTexture(["normal_texture.png"]);
+
   const { up, down, left, right } = usePlayerControls();
-  const [ref, api] = useSphere(() => ({
+  const camera = useRef();
+  const [playerRef, api] = useSphere(() => ({
     mass: 1,
     args: 0.3,
     position: [position.x, position.y, position.z],
   }));
-  const velocity = useRef([0, 0, 0]);
+  const playerPosition = useRef([0, 0, 0]);
+
+  useLayoutEffect(() => {
+    api.position.subscribe((pos) => (playerPosition.current = pos));
+  }, []);
   useFrame(() => {
+    // ref.current.getWorldPosition(camera.current.position);
     frontVector.set(0, 0, Number(down) - Number(up));
     sideVector.set(Number(left) - Number(right), 0, 0);
 
     direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(SPEED);
     api.velocity.set(direction.x, direction.y, direction.z);
+
+    // camera.current.position.copy(api.current.position);
+    const [x, y, z] = playerPosition.current;
+    camera.current.position.set(x, 5, z);
+    camera.current.lookAt(new THREE.Vector3(x, y, z));
+    camera.current.updateMatrix();
   });
+
   return (
-    <mesh ref={ref}>
-      <sphereBufferGeometry args={[0.3, 16, 16]} />
-      <meshPhysicalMaterial
-        color="green"
-        thickness={5}
-        roughness={1}
-        // transmission={1}
-        // ior={1.25}
-        // envMapIntensity={25}
-        // color="#ffffff"
-      />
-    </mesh>
+    <>
+      <PerspectiveCamera makeDefault ref={camera} far={20} />
+      <mesh ref={playerRef}>
+        <sphereBufferGeometry args={[0.3, 32, 32]} />
+        <meshStandardMaterial normalMap={normalMap} color="blue" />
+      </mesh>
+    </>
   );
 }
-
-// export default function Player(props) {
-//   const normalMap = useTexture({ normalMap: "normal_texture.png" });
-//   const [state, setState] = useState(0);
-//   const { up, down, left, right } = usePlayerControls();
-//   const [group, api] = useBox(() => ({
-//     mass: 1,
-//     args: [0.4, 1, 0.4],
-//     fixedRotation: true,
-//   }));
-//   const velocity = useRef([0, 0, 0]);
-//   useFrame(() => {
-//     frontVector.set(0, 0, Number(down) - Number(up));
-//     sideVector.set(Number(left) - Number(right), 0, 0);
-
-//     direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(SPEED);
-//     api.velocity.set(direction.x, direction.y, direction.z);
-//     // console.log(direction);
-//   });
-//   const { nodes, materials, animations } = useGLTF(
-//     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/korrigan-hat/model.gltf"
-//   );
-//   const { actions } = useAnimations(animations, group);
-//   return (
-//     <group ref={group} scale={[2, 2, 2]} {...props} dispose={null}>
-//       <group position-y={-0.265} rotation={[0, 0.01, 0]}>
-//         <primitive object={nodes.root} />
-//         <skinnedMesh
-//           geometry={nodes.Chapeau.geometry}
-//           material={materials["color_main.014"]}
-//           skeleton={nodes.Chapeau.skeleton}
-//         />
-//       </group>
-//     </group>
-//   );
-// }
-
-// useGLTF.preload(
-//   "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/korrigan-hat/model.gltf"
-// );

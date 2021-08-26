@@ -16,6 +16,7 @@ import {
   useHelper,
   useGLTF,
   useAnimations,
+  OrbitControls,
 } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -39,13 +40,10 @@ function App() {
       <Stats />
       <axesHelper args={[10]} />
       <Scene />
-      <MapControls />
+      {/* <OrbitControls /> */}
       <Suspense fallback={null}>
         <Environment files="snowy_hillside_1k.hdr" />
       </Suspense>
-
-      {/* <AnimatedMovingCube /> */}
-      {/* <FlyControls dragToLook rollSpeed={0.5} /> */}
     </Canvas>
   );
 }
@@ -77,7 +75,7 @@ function Scene() {
 
   return (
     <>
-      <Physics>
+      <Physics broadphase="SAP">
         <Maze
           mazeMap={mazeMap}
           mazeConfig={mazeConfig}
