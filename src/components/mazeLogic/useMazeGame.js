@@ -23,16 +23,16 @@ export default function useMazeGame() {
     );
 
   const nextRound = () => {
-    const col = Math.floor(Math.random() * 15) + 3;
-    const row = Math.floor(Math.random() * 15) + 3;
+    const col = Math.floor(Math.random() * 12) + 3;
+    const row = Math.floor(Math.random() * 12) + 3;
     // setMazeSize(mazeConfig.maze_col + 1, mazeConfig.maze_row + 1);
     setMazeSize(col, row);
     setNextLevel();
   };
 
   const toPrevRound = () => {
-    const col = Math.floor(Math.random() * 15) + 3;
-    const row = Math.floor(Math.random() * 15) + 3;
+    const col = Math.floor(Math.random() * 12) + 3;
+    const row = Math.floor(Math.random() * 12) + 3;
     // setMazeSize(mazeConfig.maze_col - 1, mazeConfig.maze_row - 1);
     setMazeSize(col, row);
 

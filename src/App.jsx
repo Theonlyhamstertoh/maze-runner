@@ -34,14 +34,15 @@ function App() {
     <Canvas
       camera={{ position: [0, 25, 0] }}
       onCreated={({ camera }) => (camera.rotation.z = Math.PI)}>
-      <gridHelper args={[15, 15]} />
       <ambientLight />
       <directionalLight position={[0, 10, 10]} intensity={0.5} />
-      <Stats />
-      <axesHelper args={[10]} />
       <Scene />
-      {/* <OrbitControls /> */}
-      <Suspense fallback={null}>
+      <Suspense
+        fallback={
+          <Html center className="loading">
+            Loading...
+          </Html>
+        }>
         <Environment files="snowy_hillside_1k.hdr" />
       </Suspense>
     </Canvas>
@@ -95,10 +96,6 @@ function Scene() {
           />
         </Suspense>
       </Physics>
-      <Html center className="rowTop">
-        <button onClick={toPrevRound}>Decrement</button>
-        <button onClick={nextRound}>Increment</button>
-      </Html>
     </>
   );
 }
